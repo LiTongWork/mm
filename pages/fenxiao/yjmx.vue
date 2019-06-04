@@ -9,25 +9,65 @@
 				<view class="money">+{{item.money}}</view>
 			</view>
 		</view>
+		<view class="noData" v-if="list.length == 0">暂无数据</view>
 	</view>
 </template>
 
 <script>
+	const app = require('../../App.vue');
 	export default {
 		data() {
 			return {
-				list: [
-					{
-						content: '天问三誓',
-						createTime: '2019-06-03',
-						money: '200.00'
+				list: [],
+				page: 1,
+				rows: 12
+			}
+		},
+		onLoad() {
+			let that = this;
+			that.getList();
+		},
+		onPullDownRefresh() {
+			let that = this;
+			that.page = 1;
+			that.list = [];
+			that.getList();
+		},
+		onReachBottom() {
+			let that = this;
+			that.page++;
+			that.getList();
+		},
+		methods: {
+			// 获取列表
+			getList(){
+				let that = this;
+				uni.showLoading();
+				let params = {
+					page: that.page,
+					rows: that.rows
+				}
+				uni.request({
+					url: app.default.globalData.baseUrl + '/api/Distribution/CommissionPage',
+					method: 'post',
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						'auth': app.default.globalData.token
 					},
-					{
-						content: '抓风成石',
-						createTime: '2019-06-03',
-						money: '200.00'
-					}					
-				]
+					data: params,
+					dataType: 'json',
+					success(res) {
+						uni.hideLoading();
+						uni.stopPullDownRefresh();
+						console.log(res);
+						if(res.data.code == 200) {
+							that.list = that.list.concat(res.data.data.list)
+						}
+					},
+					fail(res) {
+						console.log(res)
+					}
+				})
 			}
 		}
 	}

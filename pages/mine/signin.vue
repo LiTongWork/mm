@@ -12,9 +12,9 @@
 				<view class="signDays"><text>{{signDays}}</text>天</view>
 				<view class="signStatus">
 					<view class="signStatus-item" v-for="(item,index) in 7" :key='index'>
-						<image v-if="signDays >= item" src="/static/imgs/signStatus2.png"></image>
+						<image v-if="signDays >= (item + 1)" src="/static/imgs/signStatus2.png"></image>
 						<image v-else src="/static/imgs/signStatus1.png"></image>
-						<view>第{{item}}天</view>
+						<view>第{{item + 1}}天</view>
 					</view>
 				</view>
 				<view class="handle">
@@ -32,14 +32,45 @@
 		data(){
 			return {
 				hasSign: false,
-				integral: 200,
-				signDays: 2
+				integral: 0,
+				signDays: 0
 			}
 		},
-		onLoad() {
+		onLoad(options) {
 			let that = this;
+			console.log(options)
+			that.integral = options.integral;
+			that.getSign();
 		},
 		methods:{
+			// 获取签到信息
+			getSign(){
+				let that = this;
+				uni.showLoading();
+				uni.request({
+					url: app.default.globalData.baseUrl + '/api/User/GetSign',
+					method: 'post',
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						'auth': app.default.globalData.token
+					},
+					dataType: "json",
+					success(res) {
+						console.log(res);
+						if(res.data.code == 200){
+							that.hasSign = res.data.data.daySign;
+							that.signDays = res.data.data.signNumber;
+						}
+						uni.hideLoading()
+						setTimeout(function(){
+							
+						},1500)
+					},
+					fail(res){
+						console.log(res)
+					}
+				})
+			},
 			// 签到
 			signin(){
 				let that = this;
@@ -57,7 +88,7 @@
 					success(res) {
 						console.log(res);
 						uni.showToast({
-							title: res.message,
+							title: res.data.message,
 							icon: 'none',
 							mask: true,
 							duration: 1500

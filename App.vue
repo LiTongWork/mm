@@ -26,4 +26,13 @@
 	padding: 0;
 	box-sizing: border-box;
 }
+/* 暂无数据 */
+.noData {
+	width: 100%;
+	height: 300upx;
+	line-height: 300upx;
+	text-align: center;
+	font-size: 28upx;
+	color: #a2a2a2;
+}
 </style>

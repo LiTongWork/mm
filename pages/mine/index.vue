@@ -166,8 +166,9 @@
 			},
 			toSignin(e) {
 				// 跳转我的签到
+				let that = this;
 				uni.navigateTo({
-					url: '/pages/mine/signin'
+					url: `/pages/mine/signin?integral=${that.userInfo.integral}`
 				})
 			},
 			toAddress(e) {

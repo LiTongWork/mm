@@ -13,17 +13,19 @@
 				<view class="level" v-if="item.level == 1"><text>一级粉丝</text></view>
 				<view class="level" v-if="item.level == 2"><text>二级粉丝</text></view>						
 			</view>
-			
+			<view class="noData" v-if="list.length == 0">暂无数据</view>
 		</view>
 		
 	</view>
 </template>
 
 <script>
+	const app = require("../../App.vue");
 	export default {
 		data(){
 			return {
 				status: -1,
+				url: '/api/Distribution/GroupLogPage',
 				nav:[
 					{
 						status: -1,
@@ -38,33 +40,76 @@
 						label: '二级粉丝'
 					}										
 				],
-				list: [
-					{
-						avatar: '',
-						nickName: '脱俗仙子谈无欲',
-						level: 1
-					},
-					{
-						avatar: '',
-						nickName: '脱俗仙子谈无欲',
-						level: 1
-					},
-					{
-						avatar: '',
-						nickName: '脱俗仙子谈无欲',
-						level: 1
-					}										
-				]
+				list: [],
+				page: 1,
+				rows: 12				
 			}
+		},
+		onLoad() {
+			let that = this;
+			that.getList(that.url);
+		},
+		onPullDownRefresh() {
+			let that = this;
+			that.list = [];
+			that.page = 1;
+			that.getList(that.url);
+		},
+		onReachBottom() {
+			let that = this;
+			that.page++;
+			that.getList(that.url);
 		},
 		methods:{
 			// nav切换
 			changeStatus (e) {
 				let that = this;
 				let status = e.currentTarget.dataset.status;
-				console.log(status);
-				that.status = status;
-			}			
+				if (that.status != status) {
+					that.status = status;
+					that.list = [];
+					that.page = 1;
+					if (that.status == -1) {
+						that.url = '/api/Distribution/GroupLogPage'
+					} else if(that.status == 0) {
+						that.url = '/api/Distribution/UserFirstList'
+					} else if (that.status == 1) {
+						that.url = '/api/Distribution/UserSecondList'
+					}
+					that.getList(that.url);
+				}
+
+			},
+			// 获取列表
+			getList(url){
+				let that = this;
+				uni.showLoading();
+				let params = {
+					page: that.page,
+					rows: that.rows
+				}
+				uni.request({
+					url: app.default.globalData.baseUrl + url,
+					method: "POST",
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						'auth': app.default.globalData.token
+					},
+					data: params,
+					dataType: "json",
+					success(res) {
+						console.log(res);
+						uni.hideLoading();
+						uni.stopPullDownRefresh();
+						if(res.data.code == 200) {
+							that.list = that.list.concat(res.data.data.list);
+						}
+					},
+					fail(res){
+						console.log(res)
+					}
+				})
+			}
 		}
 	}
 </script>

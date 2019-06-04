@@ -50,6 +50,8 @@
 			}
 		},
 		methods:{
+			// 获取地址列表
+			//  选择地址
 			selAddress(e){
 				let that = this;
 				let addressId = e.currentTarget.dataset.id;
