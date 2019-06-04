@@ -1,0 +1,118 @@
+.wei-list {
+	border-bottom: 1px solid #F2F2F2;
+	justify-content: center;
+	align-items: center;
+	padding-top: 100px;
+	padding-bottom: 100px;
+
+}
+
+.wei-pic {
+	height: 200px;
+	width: 200px;
+}
+
+.wei-new {
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	line-height: 200%;
+	padding-bottom: 50px;
+	font-size: 35upx;
+}
+
+.wei-btn {}
+
+.wei-tag-btn {
+	width: 90%;
+	letter-spacing: 2px;
+	border-radius: 40px;
+	/* border: 3px solid #3EA37C; */
+	background-color: #3EA37C;
+	color: #FFFFFF;
+}
+
+/* 弹出 */
+.mask {
+	position: fixed;
+	z-index: 998;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color:  #737373;
+	opacity:0.2;
+	filter:Alpha(opacity=20); /* IE8 以及更早的浏览器 */
+}
+.show-center {
+	display: flex;
+	/* align-content: center; */
+	margin-top: -200px;
+}
+
+.desc {
+	position: fixed;
+	display: flex;
+	padding: 10upx 20upx;
+	width: 75%;
+	font-size: 20upx;
+	line-height: 30upx;
+	text-align: center;
+	background-color: #FFFFFF;
+	align-content: center;
+	flex-direction: column;
+	padding: 50px 30px;
+	margin: -150px 65px;
+	z-index: 999;
+	border-radius: 10px;
+}
+
+.wei-title {
+	justify-content: flex-start;
+	text-align: left;
+	font-size: 45px;
+	padding: 10px 30px;
+	letter-spacing: 2px;
+}
+
+.desc-pic {
+	width: 100px;
+	height: 100px;
+	padding-right: 30px;
+}
+
+.desc-t {
+	align-items: center;
+	padding: 50px 30px;
+	border-bottom: 1px solid #cccccc;
+	font-size: 30px;
+	letter-spacing: 1px;
+	margin-bottom: 30px;
+}
+
+.circle {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background-color: #5F5D5D;
+	margin-right: 30px;
+}
+
+.wei-dec {
+	align-items: center;
+	padding: 30px 30px;
+	color: #5F5D5D;
+}
+
+.wei-btn-1 {
+	padding-top: 50px;
+	justify-content: flex-end;
+	text-align: right;
+	color: #5F5D5D;
+}
+
+.wei-specail {
+	color: #1AAD19;
+	padding: 0px 30px;
+	padding-left: 50px;
+}
