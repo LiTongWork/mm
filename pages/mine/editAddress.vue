@@ -4,31 +4,31 @@
 			<view class="list-item">
 				<view class="title">姓名</view>
 				<view class="input">
-					<input type="text" v-model="name" placeholder="请输入姓名" />
+					<input type="text" v-model="consigneeName" placeholder="请输入姓名" maxlength="20"/>
 				</view>
 			</view>
 			<view class="list-item">
 				<view class="title">手机号码</view>
 				<view class="input">
-					<input type="number" v-model="mobile" placeholder="请输入手机号码" />
+					<input type="number" v-model="consigneeMobile" placeholder="请输入手机号码" maxlength="11"/>
 				</view>
 			</view>
 			<view class="list-item">
 				<view class="title">选择地区</view>
 				<view class="input" @tap="chooseCity">
-					<input type="text" readonly v-model="region.label" placeholder="请选择地址" />
+					<input type="text" readonly v-model="region.label" placeholder="请选择地址" maxlength="50"/>
 				</view>
 			</view>
 			<view class="list-item">
 				<view class="title">详细地址</view>
-				<view class="input detailAddress">
-					<textarea auto-height="true" v-model="detailAddress" placeholder="请输入详细地址" />
+				<view class="input address">
+					<input v-model="address" placeholder="请输入详细地址" />
 				</view>
 			</view>
 		</view>
 		<view class="handle">
-			<button class="save" @tap="save">保存并使用</button>
-			<button class="delete">删除收货地址</button>
+			<button class="save" @tap="save">保存</button>
+			<button class="delete" @tap="remove">删除收货地址</button>
 		</view>
 		<mpvue-city-picker :themeColor="themeColor" ref="mpvueCityPicker" :pickerValueDefault="cityPickerValue" @onCancel="onCancel" @onConfirm="onConfirm"></mpvue-city-picker>
 		
@@ -36,6 +36,7 @@
 </template>
 
 <script>
+	const app = require('../../App.vue');
 	import mpvueCityPicker from '@/components/mpvue-citypicker/mpvueCityPicker.vue'
 	export default {
 		components: {
@@ -43,25 +44,137 @@
 		},
 		data(){
 			return {
-				addressId: '',
-				name: '',
-				mobile: '',
+				id: '',
+				consigneeName: '',
+				consigneeMobile: '',
 				cityPickerValue: [0, 0, 1],
 				themeColor: '#007AFF',
 				region:{label:"",value:[],cityCode:""},
-				detailAddress: ''
+				address: ''
 			}
 		},
 		onLoad(options) {
 			let that = this;
-			that.addressId = options.addressId;
-			console.log(that.addressId)
+			let item = JSON.parse(options.item);
+			that.id = item.id;
+			that.consigneeName = item.consigneeName;
+			that.consigneeMobile = item.consigneeMobile;
+			that.region.label = item.province +'-'+ item.city +'-'+ item.area;
+			that.address = item.address;
 		},
 		methods: {
 			// 保存地址
 			save(){
 				let that = this;
-				console.log(that.name)
+				if (that.consigneeName == '') {
+					uni.showToast({
+						title: '姓名不能为空',
+						icon: 'none',
+						mask: true,
+						duration: 1500
+					})
+				} else if (that.consigneeMobile == '') {
+					uni.showToast({
+						title: '手机号码不能为空',
+						icon: 'none',
+						mask: true,
+						duration: 1500
+					})
+				} else if (!that.phoneReg(that.consigneeMobile)) {
+					uni.showToast({
+						title: '手机号码有误',
+						icon: 'none',
+						mask: true,
+						duration: 1500
+					})
+				} else if (that.region.label == '') {
+					uni.showToast({
+						title: '请选择地址',
+						icon: 'none',
+						mask: true,
+						duration: 1500
+					})					
+				} else if (that.address == '') {
+					uni.showToast({
+						title: '请填写详细地址',
+						icon: 'none',
+						mask: true,
+						duration: 1500
+					})					
+				} else {
+					let dd = that.region.label.split('-');
+					let params = {
+						id: that.id,
+						consigneeName: that.consigneeName,
+						consigneeMobile: that.consigneeMobile,
+						province: dd[0],
+						city: dd[1],
+						area: dd[2],
+						address: that.address
+					}
+					console.log(params);
+					uni.request({
+						url: app.default.globalData.baseUrl + "/api/User/UserAddressEdit",
+						method: "POST",
+						header: {
+							'content-type': 'application/x-www-form-urlencoded',
+							'auth': app.default.globalData.token
+						},
+						data: params,
+						dataType: "json",
+						success(res) {
+							console.log(res);
+							uni.showToast({
+								title: res.data.message,
+								icon: 'none',
+								mask: true,
+								duration: 1500
+							})
+							if(res.data.code == 200) {
+								setTimeout(() => {
+									uni.navigateBack()
+								},1500)
+							}
+						},
+						fail(res){
+							console.log(res)
+						}	
+					})
+				}
+			},
+			remove(){
+				let that = this;
+				let params = {
+					id: that.id
+				}
+				console.log(params)
+				uni.request({
+					url: app.default.globalData.baseUrl + "/api/User/RemoveUserAddress",
+					method: "POST",
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						'auth': app.default.globalData.token
+					},
+					data: params,
+					dataType: "json",
+					success(res) {
+						console.log(res);
+						uni.showToast({
+							title: res.data.message,
+							icon: 'none',
+							mask: true,
+							duration: 1500
+						})
+						if(res.data.code == 200) {
+							setTimeout(() => {
+								uni.navigateBack()
+							},1500)
+						}
+					},
+					fail(res){
+						console.log(res)
+					}	
+				})				
 			},
 			onCancel(e) {
 				console.log(e);
@@ -72,8 +185,12 @@
 			},
 			onConfirm(e) {
 				this.region = e;
+				console.log(e)
 				this.cityPickerValue = e.value;
 			},
+			phoneReg(phone) {
+			  return /^1[34578]\d{9}$/.test(phone)
+			}
 		}
 	}
 </script>
@@ -100,15 +217,6 @@
 	.list-item .input input {
 		width: 100%;
 		height: 100%;
-	}
-	.list-item .input.detailAddress {
-		min-height: 100upx;
-		display: flex;
-		align-items: center;
-	}
-	.list-item .input textarea {
-		flex: 1;
-		width: 100%;
 	}
 	/* 操作按钮 */
 	.handle {

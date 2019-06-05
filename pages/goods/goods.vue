@@ -179,7 +179,8 @@
 				let that = this;
 				uni.request({
 					header: {
-						'content-type': 'application/x-www-form-urlencoded'
+						'content-type': 'application/x-www-form-urlencoded',
+						"auth":app.default.globalData.token
 					},
 					method: "POST",
 					dataType: 'json',
@@ -233,14 +234,14 @@
 				uni.request({
 					header: {
 						'content-type': 'application/x-www-form-urlencoded',
-						"token": app.default.globalData.token
+						"auth": app.default.globalData.token
 					},
 					method: "POST",
 					dataType: 'json',
 					url: app.default.globalData.baseUrl + "/api/Store/AddCar",
 					data: {
 						goodsId: this.id,
-						count: 1
+						Number: 1
 					},
 					success(res) {
 						console.log(res.data)

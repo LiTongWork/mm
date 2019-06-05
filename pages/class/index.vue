@@ -26,20 +26,26 @@
 			<scroll-view scroll-y="true" class="right">
 				<view class="category">
 					<view class="list" v-for="(value,index) in categoryGoods" :key="index" v-show="index==showCategoryIndex">
-						<view class="box" @click="goDetail(value.id)">
+						<view class="box">
 							<view class="product-item">
-								<image class="product-img" :src="imgUrl+value.goodsImg" mode="" lazy-load="true"></image>
+								<image class="product-img" :src="imgUrl+value.goodsImg" mode="" lazy-load="true" @click="goDetail(value.id)"></image>
 								<view class="product-title">
 									{{value.goodsName}}
 								</view>
 								<view class="product-price">
-									<view class="product-price-num">
-										{{value.jifen}}积分
+									<view class="product-price-num" v-if="value.payMethod==1">
+										{{value.currentPice}}元
 										<view class="product-sell-num">
 											已兑换{{value.number}}件
 										</view>
 									</view>
-									<image class="product-icon-add" src="../../static/imgs/icon-add.png" mode=""></image>
+									<view class="product-price-num" v-if="value.payMethod==2">
+										{{value.currentPice}}积分
+										<view class="product-sell-num">
+											已兑换{{value.number}}件
+										</view>
+									</view>
+									<image class="product-icon-add" src="../../static/imgs/icon-add.png" mode="" @click="addCart(value.id)"></image>
 								</view>
 							</view>
 						</view>
@@ -112,11 +118,7 @@
 						console.log(res.data)
 						if (res.data.code == 200) {
 							for (var i = 0; i < res.data.data.length; i++) {
-								that.categoryGoods.push({
-									id: res.data.data[i].id,
-									goodsName: res.data.data[i].goodsName,
-									goodsImg: res.data.data[i].goodsImg
-								})
+								that.categoryGoods=res.data.data
 							}
 							console.log(JSON.stringify(that.categoryGoods))
 
@@ -130,6 +132,33 @@
 				this.categoryGoods = []
 				this.showCategoryIndex = index;
 				this.category(index);
+			},
+			//加入购物车
+			addCart(id) {
+				let that = this;
+				uni.request({
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						"auth": app.default.globalData.token
+					},
+					method: "POST",
+					dataType: 'json',
+					url: app.default.globalData.baseUrl + "/api/Store/AddCar",
+					data: {
+						goodsId:id,
+						Number: 1
+					},
+					success(res) {
+						console.log(res.data)
+						if (res.data.code == 200) {
+							uni.showToast({
+								duration: 1500,
+								title:res.data.message,
+								icon: "none"
+							});
+						}
+					}
+				})
 			},
 			//跳转到详情页
 			goDetail(id) {

@@ -123,9 +123,9 @@
 			}
 		},	
 		{
-		    "path" : "pages/fenxiao/fxyj",
+		    "path" : "pages/fenxiao/yjtx",
 		    "style" : {
-				"navigationBarTitleText":"分销佣金",
+				"navigationBarTitleText":"佣金提现",
 				"navigationBarBackgroundColor":"#f8f8f8",
 				"backgroundColorTop":"#f3f3f3",
 				"backgroundColorBottom":"#ffffff",
@@ -160,6 +160,16 @@
 				"backgroundColorTop":"#f3f3f3",
 				"backgroundColorBottom":"#ffffff",
 				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path" : "pages/mine/evaluate",
+			"style" : {
+				"navigationBarTitleText":"发表评价",
+				"navigationBarBackgroundColor":"#f8f8f8",
+				"backgroundColorTop":"#f3f3f3",
+				"backgroundColorBottom":"#ffffff",
+				"enablePullDownRefresh": false
 			}
 		}
 				

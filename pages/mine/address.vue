@@ -2,68 +2,125 @@
 	<view class="container">
 		<view class="list">
 			<view class="list-item" v-for="(item,index) in list" :key='index'>
-				<view class="icon" @tap="selAddress" :data-id='item.id'>
-					<image v-if="item.status" src="/static/imgs/selected.png"></image>
+				<view class="icon" @tap="selAddress" :data-id='item.id' :data-index='index'>
+					<image v-if="item.status == 1" src="/static/imgs/selected.png"></image>
 					<image v-else src="/static/imgs/select.png"></image>
 				</view>
-				<view class="content" @tap="selAddress" :data-id='item.id'>
+				<view class="content" @tap="selAddress" :data-id='item.id' :data-index='index'>
 					<view>
-						<text class="name">{{item.name}}</text>
-						<text class="mobile">{{item.mobile}}</text>
+						<text class="name">{{item.consigneeName}}</text>
+						<text class="mobile">{{item.consigneeMobile}}</text>
 					</view>
-					<view class="address">{{item.address}}</view>
+					<view class="address">{{item.province + item.city + item.area + item.address}}</view>
 				</view>
-				<view class="edit" @tap="toEdit" :data-id='item.id'><image src="/static/imgs/edit.png"></image></view>
+				<view class="edit" @tap="toEdit" :data-item='item'><image src="/static/imgs/edit.png"></image></view>
 			</view>
+			<view class="noData" v-if="list.length == 0">暂无数据</view>
 		</view>
 		<view class="newAddress" @tap="toNewAddress">新增收货地址</view>
 	</view>
 </template>
 
 <script>
+	const app = require('../../App.vue');
 	export default {
 		data(){
 			return {
-				list: [
-					{
-						id: 1,
-						status: true,
-						name: '猪猪',
-						mobile: 18312341234,
-						address: '安徽省合肥市蜀山区荷叶地街道1'
-					},
-					{
-						id: 2,
-						status: false,
-						name: '猪猪',
-						mobile: 18312341234,
-						address: '安徽省合肥市蜀山区荷叶地街道2'
-					},
-					{
-						id: 3,
-						status: false,
-						name: '猪猪',
-						mobile: 18312341234,
-						address: '安徽省合肥市蜀山区荷叶地街道3'
-					}
-				]
+				list: []
 			}
+		},
+		onShow(){
+			let that = this;
+			that.list = [];
+			that.getList()
+		},
+		onPullDownRefresh(){
+			let that = this;
+			that.list = [];
+			that.getList();
 		},
 		methods:{
 			// 获取地址列表
-			//  选择地址
+			getList(){
+				let that = this;
+				uni.showLoading();
+				uni.request({
+					url: app.default.globalData.baseUrl + "/api/User/UserAddressList",
+					method: "POST",
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						'auth': app.default.globalData.token
+					},
+					data: {
+						status: -1
+					},
+					dataType: "json",
+					success(res) {
+						console.log(res);
+						uni.hideLoading();
+						uni.stopPullDownRefresh();
+						if(res.data.code == 200) {
+							that.list = that.list.concat(res.data.data);
+						}
+					},
+					fail(res){
+						console.log(res)
+					}
+				})				
+			},
+			//  选择地址,设为默认地址
 			selAddress(e){
 				let that = this;
 				let addressId = e.currentTarget.dataset.id;
+				let i = e.currentTarget.dataset.index;
 				console.log(addressId)
+				let params = {
+					id: addressId
+				}
+				console.log(params)
+				uni.request({
+					url: app.default.globalData.baseUrl + "/api/User/UpdaUserAddress",
+					method: "POST",
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						'auth': app.default.globalData.token
+					},
+					data: params,
+					dataType: "json",
+					success(res) {
+						console.log(res);
+						uni.showToast({
+							title: res.data.message,
+							icon: 'none',
+							mask: true,
+							duration: 1500
+						})
+						if(res.data.code == 200) {
+							that.list.forEach((item,index) => {
+								console.log(item,index)
+								if (index == i) {
+									item.status = 1;
+								} else {
+									item.status = 0;
+								}
+							})
+							setTimeout(() => {
+								uni.navigateBack()
+							},1500)
+						}
+					},
+					fail(res){
+						console.log(res)
+					}	
+				})					
 			},
 			// 跳转
 			toEdit(e){
 				// 编辑地址
 				let that = this;
-				let addressId = e.currentTarget.dataset.id;
+				let item = e.currentTarget.dataset.item;
 				uni.navigateTo({
-					url: `/pages/mine/editAddress?addressId=${addressId}`
+					url: `/pages/mine/editAddress?item=${JSON.stringify(item)}`
 				})
 			},
 			toNewAddress(e){

@@ -8,20 +8,21 @@
 				</view>
 			</view>
 			<view class="title">平台自选</view>
-			<image class="icon-delete" src="/static/imgs/icon-delete.png" mode="" @tap="deleteList"></image>
+			<!-- <image class="icon-delete" src="/static/imgs/icon-delete.png" mode="" @tap="deleteList"></image> -->
 		</view>
 		<!-- 占位 -->
 		<view class="place"></view>
 		<!-- 商品列表 -->
 		<view class="goods-list">
 			<view class="tis" v-if="goodsList.length==0">购物车是空的哦~</view>
-            <view class="row" v-for="(row,index) in goodsList" :key="index" >
+			<view class="row" v-for="(row,index) in goodsList" :key="index">
 				<!-- 删除按钮 -->
-				<view class="menu" @tap.stop="deleteGoods(row.id)">
+				<view class="menu" @click="deleteGoods(row.goodsId,index)">
 					<image class="icon-delete" src="/static/imgs/icon-delete-white.png" mode=""></image>
 				</view>
 				<!-- 商品 -->
-				<view class="carrier" :class="[theIndex==index?'open':oldIndex==index?'close':'']" @touchstart="touchStart(index,$event)" @touchmove="touchMove(index,$event)" @touchend="touchEnd(index,$event)">
+				<view class="carrier" :class="[theIndex==index?'open':oldIndex==index?'close':'']" @touchstart="touchStart(index,$event)"
+				 @touchmove="touchMove(index,$event)" @touchend="touchEnd(index,$event)">
 					<!-- checkbox -->
 					<view class="checkbox-box" @tap="selected(index)">
 						<view class="checkbox">
@@ -33,13 +34,13 @@
 					<!-- 商品信息 -->
 					<view class="goods-info" @tap="toGoods(row)">
 						<view class="img">
-							<image :src="row.img"></image>
+							<image :src="imgUrl+row.goodsImg"></image>
 						</view>
 						<view class="info">
-							<view class="title">{{row.name}}</view>
-							<view class="spec">运费:{{row.spec}}</view>
+							<view class="title">{{row.goodsName}}</view>
+							<view class="spec">运费:{{row.freight}}</view>
 							<view class="price-number">
-								<view class="price">￥{{row.price}}</view>
+								<view class="price">￥{{row.currentPice}}</view>
 								<view class="number">
 									<view class="sub" @tap.stop="sub(index)">
 										<view class="jian">-</view>
@@ -47,7 +48,7 @@
 									<view class="input" @tap.stop="discard">
 										<input type="number" v-model="row.number" @input="sum($event,index)" />
 									</view>
-									<view class="add"  @tap.stop="add(index)">
+									<view class="add" @tap.stop="add(index)">
 										<view class="jia">+</view>
 									</view>
 								</view>
@@ -56,7 +57,7 @@
 					</view>
 				</view>
 			</view>
-        </view>
+		</view>
 		<!-- 脚部菜单 -->
 		<view class="footer" :style="{bottom:footerbottom}">
 			<view class="checkbox-box" @tap="allSelect">
@@ -69,7 +70,8 @@
 			</view>
 			<!-- <view class="delBtn" @tap="deleteList" v-if="selectedList.length>0">删除</view> -->
 			<view class="settlement">
-				<view class="sum">合计:<view class="money">￥{{sumPrice}}</view></view>
+				<view class="sum">合计:<view class="money">￥{{sumPrice}}</view>
+				</view>
 				<view class="btn" @tap="toConfirmation" :itemlength="selectedList.length">立即购买</view>
 			</view>
 		</view>
@@ -77,226 +79,288 @@
 </template>
 
 <script>
-var app = require("../../App.vue")
-import uniIcon from "@/components/uni-icon/uni-icon.vue"
+	var app = require("../../App.vue")
+	import uniIcon from "@/components/uni-icon/uni-icon.vue"
 	export default {
-		components: {uniIcon},
+		components: {
+			uniIcon
+		},
 		data() {
 			return {
-				sumPrice:'0.00',
-				headerPosition:"fixed",
-				headerTop:null,
-				statusTop:null,
-				selectedList:[],
-				isAllselected:false,
-				goodsList:[
-					{id:1,img:'/static/imgs/list/p1.jpg',name:'玻尿酸密集补水面膜 修护敏感肌肤保湿滋润SPA面膜正品男女士',spec:'免运费',price:399,number:1,selected:false},
-					{id:2,img:'/static/imgs/list/p2.jpg',name:'玻尿酸密集补水面膜 修护敏感肌肤保湿滋润SPA面膜正品男女士',spec:'不包含运费',price:100,number:1,selected:false}
-				],
+				sumPrice: '0.00',
+				headerPosition: "fixed",
+				headerTop: null,
+				statusTop: null,
+				selectedList: [],
+				isAllselected: false,
+				goodsList: [],
+				goodsChecked: [], //选中的商品id,number列表
 				//控制滑动效果
-				theIndex:null,
-				oldIndex:null,
-				isStop:false
+				theIndex: null,
+				oldIndex: null,
+				isStop: false,
+				imgUrl: app.default.globalData.imgUrl, //图片拼接位置
 			}
 		},
-		onPageScroll(e){
+		onPageScroll(e) {
 			//兼容iOS端下拉时顶部漂移
-			this.headerPosition = e.scrollTop>=0?"fixed":"absolute";
-			this.headerTop = e.scrollTop>=0?null:0;
-			this.statusTop = e.scrollTop>=0?null:-this.statusHeight+'px';
+			this.headerPosition = e.scrollTop >= 0 ? "fixed" : "absolute";
+			this.headerTop = e.scrollTop >= 0 ? null : 0;
+			this.statusTop = e.scrollTop >= 0 ? null : -this.statusHeight + 'px';
 		},
 		//下拉刷新，需要自己在page.json文件中配置开启页面下拉刷新 "enablePullDownRefresh": true
 		onPullDownRefresh() {
-		    setTimeout(function () {
-		        uni.stopPullDownRefresh();
-		    }, 1000);
+			setTimeout(function() {
+				uni.stopPullDownRefresh();
+			}, 1000);
 		},
 		onLoad() {
 			//兼容H5下结算条位置
 			// #ifdef H5
-				this.footerbottom = document.getElementsByTagName('uni-tabbar')[0].offsetHeight+'px';
+			this.footerbottom = document.getElementsByTagName('uni-tabbar')[0].offsetHeight + 'px';
 			// #endif
 			// #ifdef APP-PLUS
 			this.statusHeight = plus.navigator.getStatusbarHeight();
 			// #endif
+			this.goodsItem()
+		},
+		onShow() {
+			this.goodsItem()
 		},
 		methods: {
+			//购物车列表
+			goodsItem() {
+				let that = this;
+				uni.request({
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						"auth": app.default.globalData.token
+					},
+					method: "POST",
+					dataType: 'json',
+					url: app.default.globalData.baseUrl + "/api/Store/GetCarGoods",
+					success(res) {
+						that.goodsList = res.data.data;
+						that.theIndex = null;
+						that.oldIndex = null;
+					}
+				})
+			},
 			//加入商品 参数 goods:商品数据
-			joinGoods(goods){
+			joinGoods(goods) {
 				/*
-				* 这里只是展示一种添加逻辑，模板并没有做从其他页面加入商品到购物车的具体动作，
-				* 在实际应用上，前端并不会直接插入记录到goodsList这一个动作，一般是更新列表和本地列表缓存。
-				* 一般商城购物车的增删改动作是由后端来完成的,
-				* 后端记录后返回前端更新前端缓存
-				*/
+				 * 这里只是展示一种添加逻辑，模板并没有做从其他页面加入商品到购物车的具体动作，
+				 * 在实际应用上，前端并不会直接插入记录到goodsList这一个动作，一般是更新列表和本地列表缓存。
+				 * 一般商城购物车的增删改动作是由后端来完成的,
+				 * 后端记录后返回前端更新前端缓存
+				 */
 				let len = this.goodsList.length;
-				let isFind = false;//是否找到ID一样的商品
-				for(let i=0;i<len;i++){
+				let isFind = false; //是否找到ID一样的商品
+				for (let i = 0; i < len; i++) {
 					let row = this.goodsList[i];
-					if(row.id==goods.id )
-					{	//找到商品一样的商品
-						this.goodsList[i].number++;//数量自增
-						isFind = true;//找到一样的商品
-						break;//跳出循环
+					if (row.id == goods.id) { //找到商品一样的商品
+						this.goodsList[i].number++; //数量自增
+						isFind = true; //找到一样的商品
+						break; //跳出循环
 					}
 				}
-				if(!isFind){
+				if (!isFind) {
 					//没有找到一样的商品，新增一行到购物车商品列表头部
 					this.goodsList[i].unshift(goods);
 				}
 			},
 			//控制左滑删除效果-begin
-			touchStart(index,event){
+			touchStart(index, event) {
 				//多点触控不触发
-				if(event.touches.length>1){
+				if (event.touches.length > 1) {
 					this.isStop = true;
-					return ;
+					return;
 				}
 				this.oldIndex = this.theIndex;
 				this.theIndex = null;
 				//初始坐标
-				this.initXY = [event.touches[0].pageX,event.touches[0].pageY];
+				this.initXY = [event.touches[0].pageX, event.touches[0].pageY];
 			},
-			touchMove(index,event){
+			touchMove(index, event) {
 				//多点触控不触发
-				if(event.touches.length>1){
+				if (event.touches.length > 1) {
 					this.isStop = true;
-					return ;
+					return;
 				}
 				let moveX = event.touches[0].pageX - this.initXY[0];
 				let moveY = event.touches[0].pageY - this.initXY[1];
-				
-				if(this.isStop||Math.abs(moveX)<5){
-					return ;
+
+				if (this.isStop || Math.abs(moveX) < 5) {
+					return;
 				}
-				if (Math.abs(moveY) > Math.abs(moveX)){
+				if (Math.abs(moveY) > Math.abs(moveX)) {
 					// 竖向滑动-不触发左滑效果
 					this.isStop = true;
 					return;
 				}
-				
-				if(moveX<0){
+
+				if (moveX < 0) {
 					this.theIndex = index;
 					this.isStop = true;
-				}else if(moveX>0){
-					if(this.theIndex!=null&&this.oldIndex==this.theIndex){
+				} else if (moveX > 0) {
+					if (this.theIndex != null && this.oldIndex == this.theIndex) {
 						this.oldIndex = index;
 						this.theIndex = null;
 						this.isStop = true;
-						setTimeout(()=>{
+						setTimeout(() => {
 							this.oldIndex = null;
-						},150)
+						}, 150)
 					}
 				}
 			},
-			touchEnd(index,$event){
+			touchEnd(index, $event) {
 				//结束禁止触发效果
 				this.isStop = false;
 			},
 			//控制左滑删除效果-end
-			
-			
+
+
 			//商品跳转
-			toGoods(e){
-				uni.showToast({title: '商品'+e.id,icon:"none"});
+			toGoods(e) {
+				uni.showToast({
+					title: '商品' + e.id,
+					icon: "none"
+				});
 				uni.navigateTo({
-					url: '../goods/goods' 
+					url: '../goods/goods'
 				});
 			},
 			//跳转确认订单页面
-			toConfirmation(){
-				let tmpList=[];
-				let len = this.goodsList.length;
-				for(let i=0;i<len;i++){
-					if(this.goodsList[i].selected) {
-						tmpList.push(this.goodsList[i]);
+			toConfirmation() {
+				let that = this;
+				let len = that.goodsList.length;
+				for (let i = 0; i < len; i++) {
+					if (that.goodsList[i].selected) {
+						let goods = {
+							goodsId: that.goodsList[i].goodsId,
+							number: that.goodsList[i].number
+						}
+						console.log(" that.goodsList[i].goodsId", that.goodsList[i].goodsId)
+						that.goodsChecked.push(goods)
 					}
 				}
-				if(tmpList.length<1){
+				if (that.goodsChecked.length < 1) {
 					uni.showToast({
-						title:'请选择商品结算',
-						icon:'none'
+						title: '请选择商品结算',
+						icon: 'none'
 					});
-					return ;
+					return;
 				}
-				uni.setStorage({
-					key:'buylist',
-					data:tmpList,
-					success: () => {
-						uni.navigateTo({
-							url:'../order/confirmation'
-						})
+				console.log(that.goodsChecked)
+				uni.request({
+					header: {
+						'content-type': 'application/json',
+						"auth": app.default.globalData.token
+					},
+					method: "POST",
+					dataType: 'json',
+					url: app.default.globalData.baseUrl + "/api/User/PrepaidOrder",
+					data: {
+						"goodsChecked":that.goodsChecked
+					},
+					success(res) {
+						console.log(res.data)
+						var goodsChecked = JSON.stringify(that.goodsChecked)
+						if (res.data.code == 200) {
+							uni.navigateTo({
+								url: "../order/confirmation?goodsChecked=" +goodsChecked
+							})
+						} else {
+							uni.showToast({
+								duration: 2000,
+								title: res.data.message,
+								icon: "none",
+							});
+							return;
+						}
 					}
 				})
 			},
 			//删除商品
-			deleteGoods(id){
-				let len = this.goodsList.length;
-				for(let i=0;i<len;i++){
-					if(id==this.goodsList[i].id){
-						this.goodsList.splice(i, 1);
-						break;
+			deleteGoods(id, index) {
+				console.log("index", index)
+				let that = this;
+				uni.request({
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						"auth": app.default.globalData.token
+					},
+					method: "POST",
+					dataType: 'json',
+					url: app.default.globalData.baseUrl + "/api/Store/RemoveCar",
+					data: {
+						goodsId: id
+					},
+					success(res) {
+						that.goodsItem();
 					}
-				}
-				this.selectedList.splice(this.selectedList.indexOf(id), 1);
-				this.sum();
-				this.oldIndex = null;
-				this.theIndex = null;
+				})
 			},
 			// 删除商品s
-			deleteList(){
-				let len = this.selectedList.length;
-				while (this.selectedList.length>0)
-				{
-					this.deleteGoods(this.selectedList[0]);
-				}
-				this.selectedList = [];
-				this.isAllselected = this.selectedList.length == this.goodsList.length && this.goodsList.length>0;
-				this.sum();
-			},
+			// deleteList(){
+			// 	let len = this.selectedList.length;
+			// 	while (this.selectedList.length>0)
+			// 	{
+			// 		this.deleteGoods(this.selectedList[0]);
+			// 	}
+			// 	this.selectedList = [];
+			// 	this.isAllselected = this.selectedList.length == this.goodsList.length && this.goodsList.length>0;
+			// 	this.sum();
+			// },
 			// 选中商品
-			selected(index){
-				this.goodsList[index].selected = this.goodsList[index].selected?false:true;
+			selected(index) {
+				this.goodsList[index].selected = this.goodsList[index].selected ? false : true;
 				let i = this.selectedList.indexOf(this.goodsList[index].id);
-				i>-1?this.selectedList.splice(i, 1):this.selectedList.push(this.goodsList[index].id);
+				i > -1 ? this.selectedList.splice(i, 1) : this.selectedList.push(this.goodsList[index].id);
 				this.isAllselected = this.selectedList.length == this.goodsList.length;
 				this.sum();
+				// let goodsChecked = {
+				//   goodsId: this.goodsList[index].goodsId,
+				//   number: this.goodsList[index].number
+				// }
+				// this.goodsChecked.push(goodsChecked)
+				// console.log("this.goodsChecked",this.goodsChecked)
 			},
 			//全选
-			allSelect(){
+			allSelect() {
 				let len = this.goodsList.length;
 				let arr = [];
-				for(let i=0;i<len;i++){
-					this.goodsList[i].selected = this.isAllselected? false : true;
+				for (let i = 0; i < len; i++) {
+					this.goodsList[i].selected = this.isAllselected ? false : true;
 					arr.push(this.goodsList[i].id);
 				}
-				this.selectedList = this.isAllselected?[]:arr;
-				this.isAllselected = this.isAllselected||this.goodsList.length==0?false : true;
+				this.selectedList = this.isAllselected ? [] : arr;
+				this.isAllselected = this.isAllselected || this.goodsList.length == 0 ? false : true;
 				this.sum();
 			},
 			// 减少数量
-			sub(index){
-				if(this.goodsList[index].number<=1){
+			sub(index) {
+				if (this.goodsList[index].number <= 1) {
 					return;
 				}
 				this.goodsList[index].number--;
 				this.sum();
 			},
 			// 增加数量
-			add(index){
+			add(index) {
 				this.goodsList[index].number++;
 				this.sum();
 			},
 			// 合计
-			sum(e,index){
-				this.sumPrice=0;
+			sum(e, index) {
+				this.sumPrice = 0;
 				let len = this.goodsList.length;
-				for(let i=0;i<len;i++){
-					if(this.goodsList[i].selected) {
-						if(e && i==index){
-							this.sumPrice = this.sumPrice + (e.detail.value*this.goodsList[i].price);
-						}else{
-							this.sumPrice = this.sumPrice + (this.goodsList[i].number*this.goodsList[i].price);
+				for (let i = 0; i < len; i++) {
+					if (this.goodsList[i].selected) {
+						if (e && i == index) {
+							this.sumPrice = this.sumPrice + (e.detail.value * this.goodsList[i].currentPice + this.goodsList[i].freight);
+						} else {
+							this.sumPrice = this.sumPrice + (this.goodsList[i].number * this.goodsList[i].currentPice + this.goodsList[i].freight);
 						}
 					}
 				}
@@ -305,34 +369,52 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 			discard() {
 				//丢弃
 			}
-			
-			
+
+
 		}
 	}
 </script>
 <style lang="scss">
-	page{position: relative;}
-	@font-face {font-family:"HMfont-home";src:url('data:application/x-font-woff2;charset=utf-8;base64,d09GMgABAAAAAAOEAAsAAAAAB7wAAAM1AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHEIGVgCDHAqDAIJNATYCJAMQCwoABCAFhG0HPhu1BsiOw7jha84s8T+CgOyq6unevTlAeAkRhAhQBjj8eJfmMg/oB5whSgaFspy7AqbpwE3Py3/j9j+X07uGyFHr21lua9HYi9rUCzDeGtBYmw4o0AJJ0BvGLmiJxyEAC3yIQhSVPL9BF4U5TgBi7ChtQzfjQKFYWEdgrFiqEBsxoGurtMfAhuD74g8JQgcNg8ScWjf8xoPz7/nfD8iFpoV0eQi86XQAWwUSiAIUiJGVhgEaUSAKiYXau0kKoKOjwVRthd8PmExIBRvmWH95INCQIIyYqVYAJKGghO/5Dg4B3wtxaPD9QAoS4IOM1gEzYBbAMkT16iIQGPxsopS5ScAcK23LiaBDpzyk1aGLHtsvhVrL7adDD55016wPXnDfcr7T3lcE2TVcP2fNhZM7WeiEhVp44vx9C5vVD6+eEgaLTZvEot3HL1lawlnXLK3XnISDllbWwmrmGjlRLdxq2bpme1RAeqXtzWh6g0F//wCCnRiN2diwr2+Yse3iEs20g05Q5tT0BikOXwKf79vsoEvb6p6xjVhHP92nwDJmX+9hwsf26dXbPiNvZ/98x67/+5T+ev0aWxbXCwOX41zLxia+O73B6Y57fN1u6GvN+Zmbc8XITigTAcB0Rl6X8QB4hDgEpoXypZz2q37D5FVnVa9t1n/dUgHw8uKMq9BmWqjoJoP3zevM+zG8jmVKE5hKpRShw9WTFZW04D7TscAC+B0RcOD9FHLnzqkg0HFOQMMMb5DoBKGKGgUGLEkCIzq5YEEkpastcWQyDYQyByJYBkBgx2nQsOEaSOx4girqOzDgwj8wYickWNAiHLe0JESMsiicTLaQh84PBm6WKlst/TD9hXQV25wWBLQP4jJw435MXD58RynxFDPKT30golBxluAtOI3iOMOcs5Bc2fFF8sPd2OFVBO24WQJ9CmEIG4HwQAb4ARmFS0aK8qoL/cLnXyA0FTE23FBSZf+AYEqCzpF4YojrgN5J004lt/LKFD7RHDAVQYEMh8lIQErAICImJgOZWD0ohHARdhg5wJdzSKxVaXhX6c7y8uQN1wAWmLOU0IQUShiQo0fZTceadqaMdP2uXwEAAAAA') format('woff2');}
-	.icon {
-		font-family:"HMfont-home" !important;
-		font-size:60upx;
-		font-style:normal;
-		color:#000000;
-		&.jia {
-			&:before{content:"\e641";}
-		}
-		&.jian {
-			&:before{content:"\e643";}
-		}
-		&.shanchu {
-			&:before{content:"\e6a4";}
-		}
-		
+	page {
+		position: relative;
 	}
-	.checkbox-box{
+
+	@font-face {
+		font-family: "HMfont-home";
+		src: url('data:application/x-font-woff2;charset=utf-8;base64,d09GMgABAAAAAAOEAAsAAAAAB7wAAAM1AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHEIGVgCDHAqDAIJNATYCJAMQCwoABCAFhG0HPhu1BsiOw7jha84s8T+CgOyq6unevTlAeAkRhAhQBjj8eJfmMg/oB5whSgaFspy7AqbpwE3Py3/j9j+X07uGyFHr21lua9HYi9rUCzDeGtBYmw4o0AJJ0BvGLmiJxyEAC3yIQhSVPL9BF4U5TgBi7ChtQzfjQKFYWEdgrFiqEBsxoGurtMfAhuD74g8JQgcNg8ScWjf8xoPz7/nfD8iFpoV0eQi86XQAWwUSiAIUiJGVhgEaUSAKiYXau0kKoKOjwVRthd8PmExIBRvmWH95INCQIIyYqVYAJKGghO/5Dg4B3wtxaPD9QAoS4IOM1gEzYBbAMkT16iIQGPxsopS5ScAcK23LiaBDpzyk1aGLHtsvhVrL7adDD55016wPXnDfcr7T3lcE2TVcP2fNhZM7WeiEhVp44vx9C5vVD6+eEgaLTZvEot3HL1lawlnXLK3XnISDllbWwmrmGjlRLdxq2bpme1RAeqXtzWh6g0F//wCCnRiN2diwr2+Yse3iEs20g05Q5tT0BikOXwKf79vsoEvb6p6xjVhHP92nwDJmX+9hwsf26dXbPiNvZ/98x67/+5T+ev0aWxbXCwOX41zLxia+O73B6Y57fN1u6GvN+Zmbc8XITigTAcB0Rl6X8QB4hDgEpoXypZz2q37D5FVnVa9t1n/dUgHw8uKMq9BmWqjoJoP3zevM+zG8jmVKE5hKpRShw9WTFZW04D7TscAC+B0RcOD9FHLnzqkg0HFOQMMMb5DoBKGKGgUGLEkCIzq5YEEkpastcWQyDYQyByJYBkBgx2nQsOEaSOx4girqOzDgwj8wYickWNAiHLe0JESMsiicTLaQh84PBm6WKlst/TD9hXQV25wWBLQP4jJw435MXD58RynxFDPKT30golBxluAtOI3iOMOcs5Bc2fFF8sPd2OFVBO24WQJ9CmEIG4HwQAb4ARmFS0aK8qoL/cLnXyA0FTE23FBSZf+AYEqCzpF4YojrgN5J004lt/LKFD7RHDAVQYEMh8lIQErAICImJgOZWD0ohHARdhg5wJdzSKxVaXhX6c7y8uQN1wAWmLOU0IQUShiQo0fZTceadqaMdP2uXwEAAAAA') format('woff2');
+	}
+
+	.icon {
+		font-family: "HMfont-home" !important;
+		font-size: 60upx;
+		font-style: normal;
+		color: #000000;
+
+		&.jia {
+			&:before {
+				content: "\e641";
+			}
+		}
+
+		&.jian {
+			&:before {
+				content: "\e643";
+			}
+		}
+
+		&.shanchu {
+			&:before {
+				content: "\e6a4";
+			}
+		}
+
+	}
+
+	.checkbox-box {
 		display: flex;
 		align-items: center;
-		.checkbox{
+
+		.checkbox {
 			width: 36upx;
 			height: 36upx;
 			border-radius: 100%;
@@ -340,19 +422,22 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			.on{
+
+			.on {
 				width: 36upx;
 				height: 36upx;
 				border-radius: 100%;
 				background-color: #000;
 			}
 		}
-		.text{
+
+		.text {
 			font-size: 28upx;
 			margin-left: 10upx;
 		}
 	}
-.status {
+
+	.status {
 		width: 100%;
 		height: 0;
 		position: fixed;
@@ -360,11 +445,11 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 		background-color: #fff;
 		top: 0;
 		/*  #ifdef  APP-PLUS  */
-		height: var(--status-bar-height);//覆盖样式
+		height: var(--status-bar-height); //覆盖样式
 		/*  #endif  */
 	}
 
-	.header{
+	.header {
 		width: 92%;
 		padding: 0 4%;
 		height: 100upx;
@@ -377,33 +462,39 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 		/*  #ifdef  APP-PLUS  */
 		top: var(--status-bar-height);
 		/*  #endif  */
-		border-bottom:1upx solid #F3F3F3;
-		.checkbox{
-			margin:0 20upx 0 20upx;
+		border-bottom: 1upx solid #F3F3F3;
+
+		.checkbox {
+			margin: 0 20upx 0 20upx;
 		}
-		.title{
+
+		.title {
 			font-size: 30upx;
 		}
-		.icon-delete{
+
+		.icon-delete {
 			width: 36upx;
-			height:37upx;
+			height: 37upx;
 			// align-self: center;
 			margin-left: auto;
 		}
-		
+
 	}
-	.place{
-		
+
+	.place {
+
 		background-color: #ffffff;
 		height: 100upx;
 		/*  #ifdef  APP-PLUS  */
 		margin-top: var(--status-bar-height);
 		/*  #endif  */
 	}
-	.goods-list{
+
+	.goods-list {
 		width: 100%;
 		padding: 20upx 0 120upx 0;
-		.tis{
+
+		.tis {
 			width: 100%;
 			height: 60upx;
 			display: flex;
@@ -411,9 +502,10 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 			align-items: center;
 			font-size: 32upx;
 		}
-		.row{
+
+		.row {
 			width: calc(92.5%);
-			height: calc(22vw + 40upx); 
+			height: calc(22vw + 40upx);
 			margin: 20upx auto;
 			border-radius: 15upx;
 			// box-shadow: 0upx 5upx 20upx rgba(0,0,0,0.1);
@@ -423,15 +515,18 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 			overflow: hidden;
 			z-index: 4;
 			border: 0;
-			.menu{
-				.icon-delete{
-					width:60upx;
+
+			.menu {
+				.icon-delete {
+					width: 60upx;
 					height: 60upx;
 				}
-				.icon{
+
+				.icon {
 					color: #fff;
 					// font-size: 25upx;
 				}
+
 				position: absolute;
 				width: 30%;
 				height: 99%;
@@ -445,26 +540,45 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 				color: #fff;
 				z-index: 2;
 			}
-			.carrier{
+
+			.carrier {
 				@keyframes showMenu {
-					0% {transform: translateX(0);}100% {transform: translateX(-30%);}
+					0% {
+						transform: translateX(0);
+					}
+
+					100% {
+						transform: translateX(-30%);
+					}
 				}
+
 				@keyframes closeMenu {
-					0% {transform: translateX(-30%);}100% {transform: translateX(0);}
+					0% {
+						transform: translateX(-30%);
+					}
+
+					100% {
+						transform: translateX(0);
+					}
 				}
-				&.open{
+
+				&.open {
 					animation: showMenu 0.25s linear both;
 				}
-				&.close{
+
+				&.close {
 					animation: closeMenu 0.15s linear both;
 				}
+
 				background-color: #fff;
-				.checkbox-box{
+
+				.checkbox-box {
 					padding-left: 20upx;
 					flex-shrink: 0;
 					height: 22vw;
 					margin-right: 20upx;
 				}
+
 				position: absolute;
 				width: 100%;
 				padding: 0 0;
@@ -473,30 +587,34 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 				display: flex;
 				align-items: center;
 
-				.goods-info{
+				.goods-info {
 					width: 100%;
 					display: flex;
 					padding-right: 20upx;
-					.img{
+
+					.img {
 						width: 22vw;
 						height: 22vw;
 						border-radius: 10upx;
 						overflow: hidden;
 						flex-shrink: 0;
 						margin-right: 10upx;
-						image{
+
+						image {
 							width: 22vw;
 							height: 22vw;
 						}
 					}
-					.info{
+
+					.info {
 						width: 100%;
 						height: 22vw;
 						overflow: hidden;
 						display: flex;
 						flex-wrap: wrap;
 						position: relative;
-						.title{
+
+						.title {
 							width: 100%;
 							font-size: 28upx;
 							display: -webkit-box;
@@ -505,7 +623,8 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 							// text-align: justify;
 							overflow: hidden;
 						}
-						.spec{
+
+						.spec {
 							font-size: 20upx;
 							background-color: #f3f3f3;
 							color: #a7a7a7;
@@ -516,7 +635,8 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 							border-radius: 15upx;
 							margin-bottom: 20vw;
 						}
-						.price-number{
+
+						.price-number {
 							position: absolute;
 							width: 100%;
 							bottom: 0upx;
@@ -525,20 +645,24 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 							align-items: flex-end;
 							font-size: 28upx;
 							height: 60upx;
-							.price{
+
+							.price {
 								color: #FF4719;
 								font-size: 32upx;
 							}
-							.number{
+
+							.number {
 								display: flex;
 								justify-content: center;
 								align-items: flex-end;
-								.input{
+
+								.input {
 									width: 60upx;
 									height: 60upx;
 									margin: 0 10upx;
 									background-color: #f3f3f3;
-									input{
+
+									input {
 										width: 60upx;
 										height: 60upx;
 										display: flex;
@@ -548,8 +672,10 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 										font-size: 26upx;
 									}
 								}
-								.sub ,.add{
-									width:60upx;
+
+								.sub,
+								.add {
+									width: 60upx;
 									height: 60upx;
 									background-color: #f3f3f3;
 									border-radius: 5upx;
@@ -557,14 +683,15 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 									text-align: center;
 									line-height: 60upx;
 									color: #999999;
-									.icon{
+
+									.icon {
 										font-size: 22upx;
 										width: 45upx;
 										height: 45upx;
 										display: flex;
 										justify-content: center;
 										align-items: center;
-										
+
 									}
 								}
 							}
@@ -574,7 +701,8 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 			}
 		}
 	}
-	.footer{
+
+	.footer {
 		width: 92%;
 		padding: 0 4%;
 		background-color: #FFF;
@@ -586,7 +714,8 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 		position: fixed;
 		bottom: 0upx;
 		z-index: 5;
-		.delBtn{
+
+		.delBtn {
 			border: solid 1upx #f06c7a;
 			color: #f06c7a;
 			padding: 0 30upx;
@@ -596,27 +725,31 @@ import uniIcon from "@/components/uni-icon/uni-icon.vue"
 			justify-content: center;
 			align-items: center;
 		}
-		.settlement{
+
+		.settlement {
 			width: 60%;
 			display: flex;
 			justify-content: flex-end;
 			align-items: center;
-			.sum{
+
+			.sum {
 				width: 50%;
 				font-size: 28upx;
 				margin-right: 10upx;
 				display: flex;
 				justify-content: flex-end;
-				.money{
+
+				.money {
 					font-weight: 500;
 					font-size: 30upx;
 					color: #FF4719;
 				}
 			}
-			.btn{
+
+			.btn {
 				// padding: 0 30upx;
 				height: 80upx;
-				background:rgba(49,49,49,1);
+				background: rgba(49, 49, 49, 1);
 				color: #fff;
 				display: flex;
 				justify-content: center;

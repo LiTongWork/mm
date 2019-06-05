@@ -9,7 +9,7 @@
 				</view>
 				<view class="nickName">
 					<text class="text">{{userInfo.nickName}}</text>
-					<view class="level" v-if="userInfo.level == 1">创客</view>
+					<view class="level">V{{userInfo.level}}</view>
 				</view>
 				<view class=""><text>ID: {{userInfo.id}}</text></view>
 				<view class="referees"><text>推荐人: {{userInfo.driveNickName ? userInfo.driveNickName : '无'}}</text></view>
@@ -38,7 +38,7 @@
 					<view class="icon">
 						<view class="icon-box">
 							<image :src="item.icon"></image>
-							<view class="number">{{item.number}}</view>
+							<view class="number" v-if="item.number > 0">{{item.number}}</view>
 						</view>						
 					</view>
 					<view class="text">{{item.label}}</view>
@@ -105,24 +105,25 @@
 					{
 						icon: '/static/imgs/icon-send.png',
 						label: '待发货',
-						number: 1
+						number: 0
 					},
 					{
 						icon: '/static/imgs/icon-goods.png',
 						label: '待收货',
-						number: 2
+						number: 0
 					},
 					{
 						icon: '/static/imgs/icon-evaluation.png',
 						label: '待评价',
-						number: 3
+						number: 0
 					}
 				]
 			}
 		},
 		onShow(){
 			let that = this;
-			that.getUserInfo()
+			that.getUserInfo();
+			that.getOrder();
 		},
 		methods: {
 			// 获取个人信息
@@ -137,11 +138,36 @@
 					},
 					dataType: "json",
 					success(res) {
-						console.log(res);
+						// console.log(res);
 						if(res.data.code == 200) {
 							res.data.data.headImg = JSON.parse(res.data.data.headImg);
 							res.data.data.nickName = JSON.parse(res.data.data.nickName);
 							that.userInfo = res.data.data;
+						}
+					},
+					fail(res){
+						console.log(res)
+					}
+				})
+			},
+			// 获取订单数目
+			getOrder(){
+				let that = this;
+				uni.request({
+					url: app.default.globalData.baseUrl + "/api/User/IndentStatis",
+					method: "POST",
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						'auth': app.default.globalData.token
+					},
+					dataType: "json",
+					success(res) {
+						// console.log(res);
+						if(res.data.code == 200) {
+							that.orderList[0].number = res.data.data.noPay;
+							that.orderList[1].number = res.data.data.pay;
+							that.orderList[2].number = res.data.data.go;
+							that.orderList[3].number = res.data.data.collect;
 						}
 					},
 					fail(res){

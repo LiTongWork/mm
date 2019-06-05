@@ -28,7 +28,8 @@
 				</view>
 				<view class="handle">
 					<view >取消订单</view>
-					<view class="black">付款</view>
+					<view class="black evaluate" @tap="toEvaluate">评价</view>
+					<view class="black pay">付款</view>
 				</view>
 			</view>
 		</view>
@@ -103,6 +104,13 @@
 				let status = e.currentTarget.dataset.status;
 				console.log(status);
 				that.status = status;
+			},
+			// 评价
+			toEvaluate (e) {
+				let that = this;
+				uni.navigateTo({
+					url: '/pages/mine/evaluate'
+				})
 			}
 		}
 	}

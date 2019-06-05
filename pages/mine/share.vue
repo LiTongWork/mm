@@ -5,12 +5,41 @@
 		</view>
 		<view class="handle">
 			<button class="download">下载海报</button>
-			<button class="share">分享朋友</button>
+			<button class="share" open-type="share">分享朋友</button>
 		</view>
 	</view>
 </template>
 
 <script>
+	const app = require('../../App.vue');
+	export default {
+		onLoad(options){
+			let that = this;
+			if (options.openId) {
+				uni.showModal({
+					title: 'openId',
+					content: options.openId
+				})
+			}
+		},
+		onShareAppMessage(){
+			if (res.from === 'button') {// 来自页面内分享按钮
+			  console.log(res.target)
+			}
+			return {
+			  title: '我的分享',
+			  path: `/pages/mine/share?openId=${app.default.globalData.openId}`,
+			  success: function(res) {
+				// 转发成功
+				console.log(res)
+			  },
+			  fail: function(res) {
+				// 转发失败
+				console.log(res)
+			  }			  
+			}			
+		}
+	}
 </script>
 
 <style>

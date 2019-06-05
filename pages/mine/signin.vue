@@ -93,9 +93,12 @@
 							mask: true,
 							duration: 1500
 						})
-						setTimeout(function(){
-							
-						},1500)
+						if (res.data.code == 200) {
+							that.hasSign = true;
+							setTimeout(function(){
+								uni.navigateBack()
+							},1500)
+						}
 					},
 					fail(res){
 						console.log(res)

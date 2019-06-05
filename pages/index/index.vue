@@ -16,19 +16,25 @@
 		</view>
 		<!-- 产品列表 -->
 		<view class="lists main">
-			<view class="product-item" v-for="(value,index) in goodsList" :key="index" @click="goDetail(value.id)">
-				<image class="product-img" :src="imgUrl+goodsImg" mode="" lazy-load="true"></image>
+			<view class="product-item" v-for="(value,index) in goodsList" :key="index" >
+				<image class="product-img" :src="imgUrl+goodsImg" mode="" lazy-load="true" @click="goDetail(value.id)"></image>
 				<view class="product-title">
                     {{value.goodsName}}
 				</view>
 				<view class="product-price">
-					<view class="product-price-num">
-						{{value.jifen}}积分
+					<view class="product-price-num" v-if="value.payMethod==1">
+						{{value.currentPice}}元
 						<view class="product-sell-num">
 							已兑换{{value.number}}件
 						</view>
 					</view>
-					<image class="product-icon-add" src="../../static/imgs/icon-add.png" mode=""></image>
+					<view class="product-price-num" v-if="value.payMethod==2">
+						{{value.currentPice}}积分
+						<view class="product-sell-num">
+							已兑换{{value.number}}件
+						</view>
+					</view>
+					<image class="product-icon-add" src="../../static/imgs/icon-add.png" mode="" @click="addCart(value.id)"></image>
 				</view>
 			</view>
 		</view>
@@ -113,7 +119,7 @@
 						rows:rows
 					},
 					success(res) {
-						// console.log(JSON.stringify(res.data))
+						console.log("列表",JSON.stringify(res.data))
 						if(res.data.code==200) {
 							that.goodsList = res.data.data.list
 						}	
@@ -123,6 +129,33 @@
 			goDetail(id) {
 				uni.navigateTo({
 					url:"../goods/goods?id="+id
+				})
+			},
+			//加入购物车
+			addCart(id) {
+				let that = this;
+				uni.request({
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						"auth": app.default.globalData.token
+					},
+					method: "POST",
+					dataType: 'json',
+					url: app.default.globalData.baseUrl + "/api/Store/AddCar",
+					data: {
+						goodsId:id,
+						Number: 1
+					},
+					success(res) {
+						console.log(res.data)
+						if (res.data.code == 200) {
+							uni.showToast({
+								duration: 1500,
+								title:res.data.message,
+								icon: "none"
+							});
+						}
+					}
 				})
 			},
 			// 签到

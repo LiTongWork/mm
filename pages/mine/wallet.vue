@@ -4,7 +4,7 @@
 			<view class="title">总资产(CNY)</view>
 			<view class="money">
 				<text class="totalMoney">{{totalMoney}}</text>
-				<view class="handle">
+				<view class="handle" @tap="toYjtx">
 					<text>提现</text>
 					<uni-icon type="arrowright" size="20" color="#fff"></uni-icon>
 				</view>
@@ -36,6 +36,7 @@
 <script>
 	import uniIcon from "@/components/uni-icon/uni-icon.vue"
 	export default {
+		components: {uniIcon},
 		data () {
 			return {
 				totalMoney: '188.00',
@@ -59,7 +60,16 @@
 				rows: 10
 			}
 		},
-		components: {uniIcon},
+		methods: {
+			// 跳转
+			toYjtx(){
+				// 佣金提现
+				uni.navigateTo({
+					url: '/pages/fenxiao/yjtx'
+				})
+			}
+		}
+
 	}
 </script>
 

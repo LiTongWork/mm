@@ -3,7 +3,7 @@
 		<!-- 收货地址 -->
 		<view class="addr" @tap="selectAddress">
 			<view class="icon">
-				<image src="../../static/img/addricon.png" mode=""></image>
+				<image src="../../static/imgs/addricon.png" mode=""></image>
 			</view>
 			<view class="right">
 				<view class="tel-name">
@@ -25,13 +25,13 @@
 			<view class="row" v-for="(row,index) in buylist" :key="index">
 				<view class="goods-info">
 					<view class="img">
-						<image :src="row.img"></image>
+						<image :src="imgUrl+row.goodsImg"></image>
 					</view>
 					<view class="info">
-						<view class="title">{{row.name}}</view>
+						<view class="title">{{row.goodsName}}</view>
 						<view class="spec">选择{{row.spec}} 数量:{{row.number}}</view>
 						<view class="price-number">
-							<view class="price">￥{{row.price*row.number}}</view>
+							<view class="price">￥{{row.currentPice*row.number}}</view>
 							<view class="number">
 								
 							</view>
@@ -99,9 +99,15 @@
 </template>
 
 <script>
+	var app = require("../../App.vue")
+	import uniIcon from "@/components/uni-icon/uni-icon.vue"
 	export default {
+		components: {
+			uniIcon
+		},
 		data() {
 			return {
+				imgUrl: app.default.globalData.imgUrl, //图片拼接位置
 				buylist:[],		//订单列表
 				goodsPrice:0.0,	//商品合计价格
 				sumPrice:0.0,	//用户付款价格
@@ -113,36 +119,10 @@
 
 			};
 		},
-		onShow() {
-			//页面显示时，加载订单信息
-			uni.getStorage({
-				key:'buylist',
-				success: (ret) => {
-					this.buylist = ret.data;
-					this.goodsPrice=0;
-					//合计
-					let len = this.buylist.length;
-					for(let i=0;i<len;i++){
-						this.goodsPrice = this.goodsPrice + (this.buylist[i].number*this.buylist[i].price);
-					}
-					this.deduction = this.int/100;
-					this.sumPrice = this.goodsPrice-this.deduction+this.freight;
-					//强制保留两位小数
-					this.sumPrice = this.sumPrice.toFixed(2);
-					this.goodsPrice = this.goodsPrice.toFixed(2);
-					this.freight = this.freight.toFixed(2);
-					this.deduction = this.deduction.toFixed(2);
-				}
-			});
-			uni.getStorage({
-				key:'selectAddress',
-				success: (e) => {
-					this.recinfo = e.data;
-					uni.removeStorage({
-						key:'selectAddress'
-					})
-				}
-			})
+		onLoad(e) {
+			console.log(JSON.parse(e.goodsChecked));
+			let goodsChecked = JSON.parse(e.goodsChecked)
+			this.orderList(goodsChecked)
 		},
 		onHide() {
 			//页面隐藏清除订单信息
@@ -153,6 +133,24 @@
 			this.clearOrder();
 		},
 		methods: {
+			orderList:function(goodsChecked){
+				let that = this;
+				uni.request({
+					header: {
+						'content-type': 'application/json',
+						"auth": app.default.globalData.token
+					},
+					method: "POST",
+					dataType: 'json',
+					url: app.default.globalData.baseUrl + "/api/User/PrepaidOrder",
+					data: {
+						"goodsChecked":goodsChecked
+					},
+					success(res) {
+						that.buylist = res.data.data
+					}
+				})
+			},
 			clearOrder(){
 				uni.removeStorage({
 					key: 'buylist',
@@ -205,9 +203,9 @@
 
 <style lang="scss">
 .addr{
-	width: 86%;
+	// width: 86%;
 	padding: 20upx 3%;
-	margin: 30upx auto 20upx auto;
+	// margin: 30upx auto 20upx auto;
 	box-shadow: 0upx 5upx 20upx rgba(0,0,0,0.1);
 	border-radius: 20upx;
 	display: flex;
@@ -367,7 +365,7 @@
 			.btn{
 				padding: 0 30upx;
 				height: 60upx;
-				background-color: #f06c7a;
+				background-color: #313131;
 				color: #fff;
 				display: flex;
 				justify-content: center;
