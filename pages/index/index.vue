@@ -7,11 +7,11 @@
 			</swiper-item>
 		</swiper>
 		<!-- 签到 -->
-		<view class="qiandao main">
-			<image class="qiandao-img" :src="imgUrl+sign" mode="" lazy-load="true" @tap="toQiandao"></image>
+		<view class="qiandao main" @click="goQian">
+			<image class="qiandao-img" :src="imgUrl+sign" mode="" lazy-load="true" ></image>
 		</view>
 		<!-- 399面膜 -->
-		<view class="mianmo main">
+		<view class="mianmo main" @click=goDetail(goodId)>
 			<image class="mianmo-img" :src="imgUrl+goodsImg" mode="" lazy-load="true"></image>
 		</view>
 		<!-- 产品列表 -->
@@ -25,13 +25,13 @@
 					<view class="product-price-num" v-if="value.payMethod==1">
 						{{value.currentPice}}元
 						<view class="product-sell-num">
-							已兑换{{value.number}}件
+							已兑换{{value.sales}}件
 						</view>
 					</view>
 					<view class="product-price-num" v-if="value.payMethod==2">
 						{{value.currentPice}}积分
 						<view class="product-sell-num">
-							已兑换{{value.number}}件
+							已兑换{{value.sales}}件
 						</view>
 					</view>
 					<image class="product-icon-add" src="../../static/imgs/icon-add.png" mode="" @click="addCart(value.id)"></image>
@@ -57,6 +57,7 @@
 				imgUrl : app.default.globalData.imgUrl,//图片拼接位置
 				sign:"",//签到图
 				goodsImg:"",//主产品图
+				goodId:"",//主产品id
 				goodsList:[],//首页商品列表
 				page:1,
 				rows:4
@@ -99,7 +100,8 @@
 					url:app.default.globalData.baseUrl+"/api/Home/GoodsObject",
 					success(res) {
 						if(res.data.code==200) {
-							that.goodsImg = res.data.data.goodsImg
+							that.goodsImg = res.data.data.goodsImg;
+							that.goodId = res.data.data.id
 						}	
 					}	
 				})
@@ -119,7 +121,7 @@
 						rows:rows
 					},
 					success(res) {
-						console.log("列表",JSON.stringify(res.data))
+						// console.log("列表",JSON.stringify(res.data))
 						if(res.data.code==200) {
 							that.goodsList = res.data.data.list
 						}	
@@ -174,7 +176,18 @@
 						}	
 					}	
 				})
-			}
+			},
+			goQian() {
+				uni.navigateTo({
+					url:"../mine/signin"
+				})
+			},
+			onPullDownRefresh() {
+				this.banner();//轮播图
+				this.signShow();//签到图
+				this.mainGood();//主商品广告位
+				this.indexGoods(this.page,this.rows)//主页商品列表
+			},
 			
 		}
 	}

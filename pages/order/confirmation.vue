@@ -1,99 +1,61 @@
 <template>
-	<view>
+	<view class="page-body">
 		<!-- 收货地址 -->
-		<view class="addr" @tap="selectAddress">
-			<view class="icon">
-				<image src="../../static/imgs/addricon.png" mode=""></image>
+		<view class="addr">
+			<view class="add-item" @click="selectAddress" v-if="province==''">
+				<view class="add-l">
+					<image class="add-icon" src="../../static/imgs/addricon.png" mode="aspectFit"></image>
+					<text>新增地址</text>
+				</view>
+				<uni-icon type="arrowright" size="20" color="#a2a2a2"></uni-icon>
 			</view>
-			<view class="right">
-				<view class="tel-name">
-					<view class="name">
-						{{recinfo.name}}
-					</view>
-					<view class="tel">
-						{{recinfo.tel}}
+			<view class="add-item" v-if="province!=''" @click="goAddress">
+				<view class="add-name">
+					<image class="add-pic" src="../../static/imgs/address.png" mode="aspectFit"></image>
+					<view class="add-tag">
+						<view class="add-text">
+							<text style="font-size: 35rpx;">{{consigneeName}}</text><text style="color: #A2A2A2;margin-left: 20rpx;">{{consigneeMobile}}</text>
+						</view>
+						<text>{{province+city+area+address}}</text>
 					</view>
 				</view>
-				<view class="addres">
-					{{recinfo.address.region.label}}
-					{{recinfo.address.detailed}}
-				</view>
+				<uni-icon type="arrowright" size="20" color="#a2a2a2"></uni-icon>
 			</view>
 		</view>
 		<!-- 购买商品列表 -->
-		<view class="buy-list">
-			<view class="row" v-for="(row,index) in buylist" :key="index">
-				<view class="goods-info">
-					<view class="img">
-						<image :src="imgUrl+row.goodsImg"></image>
+		<view class="goods-list" v-for="(value,index) in buylist" :key="index">
+			<view class="goods-store">
+				<image class="goods-icon" src="/static/imgs/store-icon.png" mode="aspectFit"></image>
+				<text>平台自营</text>
+			</view>
+			<view class="goods-tag">
+				<image class="goods-img" :src="imgUrl+value.goodsImg" mode="aspectFit"></image>
+				<view class="goods-item">
+					<text>{{value.goodsName}}</text>
+					<text style="color: #999999;">运费:{{value.freight}}</text>
+					<view class="goods-price" v-if="value.payMethod==1">
+						<text style="color: red;font-size: 30rpx;">￥{{value.currentPice}}</text> <text>数量: {{value.number}}</text>
 					</view>
-					<view class="info">
-						<view class="title">{{row.goodsName}}</view>
-						<view class="spec">选择{{row.spec}} 数量:{{row.number}}</view>
-						<view class="price-number">
-							<view class="price">￥{{row.currentPice*row.number}}</view>
-							<view class="number">
-								
-							</view>
-						</view>
+					<view class="goods-price" v-if="value.payMethod==2">
+						<text style="color: red;font-size: 30rpx;">{{value.currentPice}}积分</text> <text>数量: {{value.number}}</text>
 					</view>
 				</view>
 			</view>
-		</view>
-		<!-- 提示-备注 -->
-		<view class="order">
-			<view class="row">
-				<view class="left">
-					积分 :
-				</view>
-				<view class="right">
-					已扣除{{int}}积分抵扣{{deduction}}元
-				</view>
+			<view class="goods-heji" v-if="value.payMethod==1">
+				<text>合计：</text><text style="color: red;font-size: 30rpx;">￥{{value.currentPice*value.number}}</text>
 			</view>
-			<view class="row">
-				<view class="left">
-					备注 :
-				</view>
-				<view class="right">
-					<input placeholder="选填,备注内容" v-model="note" />
-				</view>
+			<view class="goods-heji" v-if="value.payMethod==2">
+				<text>合计：</text><text style="color: red;font-size: 30rpx;">{{value.currentPice*value.number}}积分</text>
 			</view>
 		</view>
-		<!-- 明细 -->
-		<view class="detail">
-			<view class="row">
-				<view class="nominal">
-					商品金额
-				</view>
-				<view class="content">
-					￥{{goodsPrice}}
-				</view>
-			</view>
-			<view class="row">
-				<view class="nominal">
-					运费
-				</view>
-				<view class="content">
-					￥+{{freight}}
-				</view>
-			</view>
-			<view class="row">
-				<view class="nominal">
-					积分抵扣
-				</view>
-				<view class="content">
-					￥-{{deduction}}
-				</view>
-			</view>
+		<!-- 提交订单按钮 -->
+		<view class="order-tag" v-if="payMethod==1">
+			<text>合计:</text><text style="color: red;">￥{{allPrice}}</text>
+			<text class="order-btn" @click="trueBtn">提交订单</text>
 		</view>
-		<view class="blck">
-			
-		</view>
-		<view class="footer">
-			<view class="settlement">
-				<view class="sum">合计:<view class="money">￥{{sumPrice}}</view></view>
-				<view class="btn" @tap="toPay">提交订单</view>
-			</view>
+		<view class="order-tag" v-if="payMethod==2">
+			<text>合计:</text><text style="color: red;">{{allPrice}}积分</text>
+			<text class="order-btn" @click="trueBtn">提交订单</text>
 		</view>
 	</view>
 </template>
@@ -108,32 +70,56 @@
 		data() {
 			return {
 				imgUrl: app.default.globalData.imgUrl, //图片拼接位置
-				buylist:[],		//订单列表
-				goodsPrice:0.0,	//商品合计价格
-				sumPrice:0.0,	//用户付款价格
-				freight:12.00,	//运费
-				note:'',		//备注
-				int:1200,		//抵扣积分
-				deduction:0,	//抵扣价格
-				recinfo:{id:1,name:"大黑哥",head:"大",tel:"18816881688",address:{region:{"label":"广东省-深圳市-福田区","value":[18,2,1],"cityCode":"440304"},detailed:'深南大道1111号无名摩登大厦6楼A2'},isDefault:true}
-
+				buylist: [], //订单列表
+				consigneeName:"",
+				consigneeMobile:"",
+				province:"",
+				city:"",
+				area:"",
+				address:"",
+				allPrice: "",
+				goodsChecked: [],
+				payMethod:""//支付方式1是元 ，2时积分
 			};
 		},
 		onLoad(e) {
 			console.log(JSON.parse(e.goodsChecked));
-			let goodsChecked = JSON.parse(e.goodsChecked)
-			this.orderList(goodsChecked)
+			console.log(e.sumPrice);
+			this.allPrice = e.sumPrice
+			this.goodsChecked = JSON.parse(e.goodsChecked)
+			this.orderList(this.goodsChecked);
+			this.add();
 		},
-		onHide() {
-			//页面隐藏清除订单信息
-			this.clearOrder();
-		},
-		onBackPress() {
-			//页面后退时候，清除订单信息
-			this.clearOrder();
+		onShow() {
+			// this.orderList(goodsChecked);
+			this.add();
 		},
 		methods: {
-			orderList:function(goodsChecked){
+			add: function() {
+				let that = this;
+				uni.request({
+					header: {
+						'content-type': 'application/json',
+						"auth": app.default.globalData.token
+					},
+					method: "POST",
+					dataType: 'json',
+					url: app.default.globalData.baseUrl + "/api/User/UserAddressList",
+					data: {
+						"Status": -1
+					},
+					success(res) {
+						console.log(res.data)
+						that.consigneeName = res.data.data[0].consigneeName;
+						that.consigneeMobile = res.data.data[0].consigneeMobile;
+						that.province = res.data.data[0].province;
+						that.city = res.data.data[0].city;
+						that.area = res.data.data[0].area;
+						that.address = res.data.data[0].address;
+					}
+				})
+			},
+			orderList: function(goodsChecked) {
 				let that = this;
 				uni.request({
 					header: {
@@ -144,57 +130,106 @@
 					dataType: 'json',
 					url: app.default.globalData.baseUrl + "/api/User/PrepaidOrder",
 					data: {
-						"goodsChecked":goodsChecked
+						"goodsChecked": goodsChecked
 					},
 					success(res) {
 						that.buylist = res.data.data
-					}
-				})
-			},
-			clearOrder(){
-				uni.removeStorage({
-					key: 'buylist',
-					success: function (res) {
-						this.buylist = [];
-						console.log('remove buylist success');
-					}
-				});
-			},
-			toPay(){
-				//商品列表
-				let paymentOrder = [];
-				let goodsid=[];
-				let len = this.buylist.length;
-				for(let i=0;i<len;i++){
-					paymentOrder.push(this.buylist[i]);
-					goodsid.push(this.buylist[i].id);
-				}
-				if(paymentOrder.length==0){
-					uni.showToast({title:'订单信息有误，请重新购买',icon:'none'});
-					return ;
-				}
-				//本地模拟订单提交UI效果
-				uni.showLoading({
-					title:'正在提交订单...'
-				})
-				setTimeout(()=>{
-					uni.setStorage({
-						key:'paymentOrder',
-						data:paymentOrder,
-						success: () => {
-							uni.hideLoading();
-							uni.redirectTo({
-								url:"../pay/payment/payment?amount="+this.sumPrice
-							})
+						for(var i = 0;i<that.buylist.length;i++){
+							that.payMethod=that.buylist[i].payMethod
+							console.log(that.payMethod)
 						}
+					}
+				})
+			},
+			trueBtn() {
+				let that = this;
+				let  orderUrl
+				if(that.province=="") {
+					wx.showToast({
+					  title: '请填写地址',
+					  icon: "none",
+					  mask: true,
+					  duration: 1500
 					})
-				},1000)
-				
+					return
+				}
+				if(that.payMethod==1) {
+					orderUrl="/api/User/SaveOrder"
+				}
+				if(that.payMethod==2){
+					orderUrl= "/api/User/IntegralSaveOrder"
+				}
+				uni.request({
+					header: {
+						'content-type': 'application/json',
+						"auth": app.default.globalData.token
+					},
+					url:app.default.globalData.baseUrl+orderUrl,
+					method: "POST",
+					dataType: 'json',
+					data: {
+						userAddress: that.province+that.city+that.area+that.address,
+						isShopping: true,
+						goodsChecked: that.goodsChecked
+					},
+					success(res) {
+						console.log(res.data);
+						if(that.payMethod ==1) {
+							wx.requestPayment({
+							  timeStamp: res.data.data.data.timeStamp,
+							  nonceStr: res.data.data.data.nonceStr,
+							  package: res.data.data.data.prepayId,
+							  signType: 'MD5',
+							  paySign: res.data.data.data.sign,
+							  success(res) {
+							    wx.showToast({
+							      title: '商品购买成功',
+							      icon: 'success',
+							      mask: true,
+							      duration: 2000
+							    })
+							    wx.switchTab({
+							      url: '/pages/mine/index'
+							    })
+							  },
+							  fail(res) { 
+							    wx.showToast({
+							      title: '商品购买失败',
+							      icon: 'none',
+							      mask: true,
+							      duration: 2000
+							    })
+							    wx.switchTab({
+							      url: '/pages/mine/index'
+							    })
+							  }
+							})
+						}else{
+							 wx.showToast({
+							  title: '商品购买成功',
+							  icon: 'none',
+							  mask: true,
+							  duration: 2000
+							})
+							setTimeout(function() {
+								wx.switchTab({
+								  url: '/pages/mine/index'
+								})
+							}, 2000);
+							
+						}
+					}
+				})
 			},
 			//选择收货地址
-			selectAddress(){
+			selectAddress() {
 				uni.navigateTo({
-					url:'../user/address/address?type=select'
+					url: '../mine/newAddress'
+				})
+			},
+			goAddress() {
+				uni.navigateTo({
+					url: '../mine/address'
 				})
 			}
 		}
@@ -202,197 +237,131 @@
 </script>
 
 <style lang="scss">
-.addr{
-	// width: 86%;
-	padding: 20upx 3%;
-	// margin: 30upx auto 20upx auto;
-	box-shadow: 0upx 5upx 20upx rgba(0,0,0,0.1);
-	border-radius: 20upx;
-	display: flex;
-	.icon{
-		width: 80upx;
-		height: 80upx;
+	view {
 		display: flex;
+	}
+
+	.page-body {
+		display: flex;
+		flex-direction: column;
+		background-color: #F2F2F2;
+		height: 100vh;
+	}
+
+	.addr {
+		height: 200rpx;
+		background-color: #FFFFFF;
+		display: flex;
+	}
+	.add-name {
+		font-size: 30rpx;
+		line-height: 180%;
+	}
+	.add-pic {
+		height: 60rpx;
+		width: 100rpx;
+		margin-right: 10rpx;
+		align-self: center;
+	}
+	.add-icon {
+		display: inline-flex;
+		align-self: center;
+		height: 60rpx;
+		width: 60rpx;
+		margin-right: 10rpx;
+	}
+
+	.add-l {
+		display: inline-flex;
+		flex: 3;
 		align-items: center;
-		image{
-			width: 60upx;
-			height: 60upx;
-		}
 	}
-	.tel-name{
-		width: 100%;
+
+	.add-item {
 		display: flex;
-		font-size: 32upx;
-		.tel{
-			margin-left: 40upx;
-		}
-	}
-	.addres{
-		width: 100%;
-		font-size: 26upx;
-		color: #999;
-	}
-}
-.buy-list{
-	width: 86%;
-	padding: 10upx 3%;
-	margin: 30upx auto 20upx auto;
-	box-shadow: 0upx 5upx 20upx rgba(0,0,0,0.1);
-	border-radius: 20upx;
-	.row{
-		margin: 30upx 0;
-		.goods-info{
-			width: 100%;
-			display: flex;
-			.img{
-				width: 22vw;
-				height: 22vw;
-				border-radius: 10upx;
-				overflow: hidden;
-				flex-shrink: 0;
-				margin-right: 10upx;
-				image{
-					width: 22vw;
-					height: 22vw;
-				}
-			}
-			.info{
-				width: 100%;
-				height: 22vw;
-				overflow: hidden;
-				display: flex;
-				flex-wrap: wrap;
-				position: relative;
-				.title{
-					width: 100%;
-					font-size: 28upx;
-					display: -webkit-box;
-					-webkit-box-orient: vertical;
-					-webkit-line-clamp: 2;
-					// text-align: justify;
-					overflow: hidden;
-				}
-				.spec{
-					font-size: 22upx;
-					background-color: #f3f3f3;
-					color: #a7a7a7;
-					height: 40upx;
-					display: flex;
-					align-items: center;
-					padding: 0 10upx;
-					border-radius: 20upx;
-					margin-bottom: 20vw;
-				}
-				.price-number{
-					position: absolute;
-					width: 100%;
-					bottom: 0upx;
-					display: flex;
-					justify-content: space-between;
-					align-items: flex-end;
-					font-size: 28upx;
-					height: 40upx;
-					.price{
-						color: #f06c7a;
-					}
-					.number{
-						display: flex;
-						justify-content: center;
-						align-items: center;
-						
-					}
-				}
-			}
-		}
-	}
-}
-.order{
-	width: 86%;
-	padding: 10upx 3%;
-	margin: 30upx auto 20upx auto;
-	box-shadow: 0upx 5upx 20upx rgba(0,0,0,0.1);
-	border-radius: 20upx;
-	.row{
-		margin: 20upx 0;
-		height: 40upx;
-		display: flex;
-		.left{
-			font-size: 28upx;
-		}
-		.right{
-			margin-left: 40upx;
-			font-size: 26upx;
-			color: #999;
-			input{
-				font-size: 26upx;
-				color: #999;
-			}
-		}
-	}
-}
-.blck{
-	width: 100%;
-	height: 100upx;
-}
-.footer{
-		width: 92%;
-		padding: 0 4%;
-		background-color: #fbfbfb;
-		height: 100upx;
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-		font-size: 28upx;
-		position: fixed;
-		bottom: 0upx;
-		z-index: 5;
-		
-		.settlement{
-			width: 80%;
-			display: flex;
-			justify-content: flex-end;
-			align-items: center;
-			.sum{
-				width: 50%;
-				font-size: 28upx;
-				margin-right: 10upx;
-				display: flex;
-				justify-content: flex-end;
-				.money{
-					font-weight: 600;
-				}
-			}
-			.btn{
-				padding: 0 30upx;
-				height: 60upx;
-				background-color: #313131;
-				color: #fff;
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				font-size: 30upx;
-				border-radius: 40upx;
-			}
-		}
-	}
-.detail{
-	width: 86%;
-	padding: 10upx 3%;
-	margin: 30upx auto 20upx auto;
-	box-shadow: 0upx 5upx 20upx rgba(0,0,0,0.1);
-	border-radius: 20upx;
-	.row{
-		height: 60upx;
-		display: flex;
+		flex: 1;
 		justify-content: space-between;
+		padding: 40rpx 20rpx;
 		align-items: center;
-		.nominal{
-			font-size: 28upx;
-		}
-		.content{
-			font-size: 26upx;
-			color: #f06c7a;
-		}
 	}
-}
+
+	.add-tag {
+		flex-direction: column;
+	}
+
+	// 商品订单列表
+	.goods-list {
+		width: 85%;
+		flex-direction: column;
+		background-color: #FFFFFF;
+		font-size: 26rpx;
+		margin: 25rpx auto;
+		padding: 20rpx;
+		border-radius: 5rpx;
+	}
+
+	.goods-icon {
+		height: 40rpx;
+		width: 40rpx;
+		margin-right: 20rpx;
+	}
+
+	.goods-store {
+		padding: 20rpx 0rpx;
+		font-size: 30rpx;
+		align-items: center;
+	}
+
+	.goods-tag {
+		border-bottom: 1rpx solid #A2A2A2;
+		padding: 30rpx 10rpx;
+	}
+
+	.goods-img {
+		height: 200rpx;
+		width: 200rpx;
+	}
+
+	.goods-item {
+		flex-direction: column;
+		padding-left: 20rpx;
+		line-height: 200%;
+		flex: 1;
+	}
+
+	.goods-price {
+		justify-content: space-between;
+	}
+
+	.goods-heji {
+		justify-content: flex-end;
+		padding: 20rpx 10rpx;
+		align-items: center;
+	}
+
+	// 提交订单按钮
+	.order-tag {
+		justify-content: flex-end;
+		position: fixed;
+		bottom: 0;
+		width: 750rpx;
+		align-items: center;
+		font-size: 26rpx;
+		padding: 5rpx 0rpx;
+		background-color: #FFFFFF;
+	}
+
+	.order-btn {
+		height: 100rpx;
+		width: 250rpx;
+		background-color: #313131;
+		color: #FFFFFF;
+		border-radius: 60rpx;
+		margin-left: 15rpx;
+		line-height: 100rpx;
+		text-align: center;
+		margin: 3rpx 0rpx;
+		margin-right: 30rpx;
+		margin-left: 15rpx;
+	}
 </style>

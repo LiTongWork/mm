@@ -79,34 +79,25 @@
 			<view class="price" v-if="payMethod==2">{{currentPice}}积分</view>
 			<view class="" style="font-size: 26rpx;color: #A2A2A2;display: flex;">
 				<text style="margin-right: 30rpx;">原价{{originalPice}}</text><text style="margin-right: 30rpx;">销量:{{sales}}</text><text
-				 style="margin-right: 30rpx;">运费:{{freight}}</text>
+				 style="margin-right: 30rpx;">运费:{{freight}}元</text>
 			</view>
 
-		</view>
-		<!-- 服务-规则选择 -->
-		<view class="info-box spec">
-			<view class="row" @tap="showSpec(false)">
-				<view class="text">选择</view>
-				<view class="content">
-					<view>选择规格：{{count}}</view>
-					<view class="sp">
-						<view v-for="(item,index) in goodCount" :key="index" :class="[index==selectSpec?'on':'']">{{item}}</view>
-					</view>
-				</view>
-				<view class="arrow">
-					<view class="icon xiangyou"></view>
-				</view>
-			</view>
 		</view>
 		<!-- 评价和详情页切换 -->
-		<view class="">
-
+		<view class="detail-part">
+			<view class="detail-title">
+				<text :class="[leftDetail?'activePart':'detail-tag']" @click="detail">商品详情</text><text :class="[rightDetail?'activePart':'detail-tag']" @click="pingjia">评价</text>
+			</view>
+			<view class="" style="flex-direction: column;">
+				<rich-text style="font-size: 20px;line-height: 150%;" :nodes="goodsContent"></rich-text>
+			</view>
 		</view>
 	</view>
 </template>
 
 <script>
 	var app = require("../../App.vue")
+	import htmlParser from '@/components/html-parser.js'
 	export default {
 		data() {
 			return {
@@ -135,14 +126,11 @@
 				payMethod:"",//1是人民币，2是积分
 				currentPice: 0,
 				originalPice: "",
-				freight: "",
+				freight: 0,
 				sales: "", //销量
-				spec: ["XS", "S", "M", "L", "XL", "XXL"],
-				comment: {}, //评价
-				selectSpec: null, //选中规格
-				isKeep: false, //收藏
-				//商品描述html
-				// descriptionStr:'<div style="text-align:center;"><img width="100%" src="https://s2.ax1x.com/2019/03/28/AdOogx.jpg"/><img width="100%" src="https://s2.ax1x.com/2019/03/28/AdOHKK.jpg"/><img width="100%" src="https://s2.ax1x.com/2019/03/28/AdOTv6.jpg"/></div>'
+				goodsContent:"",//详情内容
+				leftDetail:true,//左边切换
+				rightDetail:false//右边切换
 			};
 		},
 		onLoad(option) {
@@ -200,6 +188,9 @@
 							that.swiperList.push({
 								goodsImg: res.data.data.goodsImg
 							})
+							console.log("res.data.data.goodsContent",res.data.data.goodsContent)
+							var htmlString= res.data.data.goodsContent.replace(/\\/g, "").replace(/<img/g,"<img style=\"max-width:100%;height:auto;\"");
+							that.goodsContent = htmlParser(htmlString);
 						}
 					}
 				})
@@ -221,6 +212,16 @@
 				uni.switchTab({
 					url: "../index/index"
 				})
+			},
+			detail(){
+				let that =this;
+				that.leftDetail = true;
+				that.rightDetail = false
+			},
+			pingjia() {
+				let that =this;
+				that.leftDetail = false;
+				that.rightDetail = true
 			},
 			//前往购物车
 			goCart() {
@@ -355,6 +356,41 @@
 <style lang="scss">
 	page {
 		background-color: #f8f8f8;
+	}
+	.detail-part {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+	}
+	.detail-title {
+		height: 130rpx;
+		display: flex;
+		justify-content: center;
+		background-color: #FFFFFF;
+		border-bottom:1rpx solid #F2F2F2;
+	}
+	.detail-tag {
+		display: inline-flex;
+		flex: 1;
+		text-align: center;
+		align-self: center;
+		justify-content: center;
+		color: #888888;
+		height: 130rpx;
+		line-height: 130rpx;
+		width: 200rpx;
+	}
+	.activePart {
+		display: inline-flex;
+		flex: 1;
+		text-align: center;
+		align-self: center;
+		justify-content: center;
+		border-bottom:2rpx solid #313131;
+		color: #313131;
+		height: 130rpx;
+		line-height: 130rpx;
+		width: 200rpx;
 	}
 
 	@keyframes showPopup {
@@ -643,6 +679,7 @@
 		padding: 20upx 4%;
 		background-color: #fff;
 		margin-bottom: 20upx;
+		line-height: 180%;
 	}
 
 	.goods-info {

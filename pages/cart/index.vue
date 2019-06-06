@@ -40,7 +40,8 @@
 							<view class="title">{{row.goodsName}}</view>
 							<view class="spec">运费:{{row.freight}}</view>
 							<view class="price-number">
-								<view class="price">￥{{row.currentPice}}</view>
+								<view class="price" v-if="row.payMethod==1">￥{{row.currentPice}}</view>
+								<view class="price" v-if="row.payMethod==2">{{row.currentPice}}积分</view>
 								<view class="number">
 									<view class="sub" @tap.stop="sub(index)">
 										<view class="jian">-</view>
@@ -70,9 +71,11 @@
 			</view>
 			<!-- <view class="delBtn" @tap="deleteList" v-if="selectedList.length>0">删除</view> -->
 			<view class="settlement">
-				<view class="sum">合计:<view class="money">￥{{sumPrice}}</view>
+				<view class="sum">合计:<text class="money">{{sumPrice}}</text></view>
+				<!-- <view class="sum" v-if="payMethod==2">合计:<text class="money">{{sumPrice}}积</text></view> -->
+				<view>
+					<view class="btn" @tap="toConfirmation" :itemlength="selectedList.length">立即购买</view>
 				</view>
-				<view class="btn" @tap="toConfirmation" :itemlength="selectedList.length">立即购买</view>
 			</view>
 		</view>
 	</view>
@@ -100,6 +103,9 @@
 				oldIndex: null,
 				isStop: false,
 				imgUrl: app.default.globalData.imgUrl, //图片拼接位置
+				payMethod: 1, //支付方式
+				jifen: false, //积分方式
+				qian: false //钱方式
 			}
 		},
 		onPageScroll(e) {
@@ -110,6 +116,10 @@
 		},
 		//下拉刷新，需要自己在page.json文件中配置开启页面下拉刷新 "enablePullDownRefresh": true
 		onPullDownRefresh() {
+			this.jifen = false;
+			this.qian  = false;
+			this.isAllselected = false;
+			this.goodsItem()
 			setTimeout(function() {
 				uni.stopPullDownRefresh();
 			}, 1000);
@@ -122,9 +132,15 @@
 			// #ifdef APP-PLUS
 			this.statusHeight = plus.navigator.getStatusbarHeight();
 			// #endif
-			this.goodsItem()
+			this.goodsItem();
+			this.isAllselected = false;
 		},
 		onShow() {
+			this.jifen = false;
+			this.qian  = false;
+			this.isAllselected = false;
+			this.goodsChecked = [];
+			this.goodsChecked = [];
 			this.goodsItem()
 		},
 		methods: {
@@ -218,8 +234,6 @@
 				this.isStop = false;
 			},
 			//控制左滑删除效果-end
-
-
 			//商品跳转
 			toGoods(e) {
 				uni.showToast({
@@ -234,6 +248,7 @@
 			toConfirmation() {
 				let that = this;
 				let len = that.goodsList.length;
+				let payMethod = 0
 				for (let i = 0; i < len; i++) {
 					if (that.goodsList[i].selected) {
 						let goods = {
@@ -244,8 +259,23 @@
 						that.goodsChecked.push(goods)
 					}
 				}
+				// console.log(that.payMethod)
+				if (that.qian && that.jifen) {
+					uni.showToast({
+						duration: 2000,
+						title: '请选择相同支付的方式的商品',
+						icon: 'none'
+					});
+					that.isAllselected = false;
+					that.jifen = false;
+					that.qian = false;
+					that.goodsItem();
+					that.goodsChecked=[]
+					return;
+				}
 				if (that.goodsChecked.length < 1) {
 					uni.showToast({
+						duration: 2000,
 						title: '请选择商品结算',
 						icon: 'none'
 					});
@@ -261,14 +291,14 @@
 					dataType: 'json',
 					url: app.default.globalData.baseUrl + "/api/User/PrepaidOrder",
 					data: {
-						"goodsChecked":that.goodsChecked
+						"goodsChecked": that.goodsChecked
 					},
 					success(res) {
 						console.log(res.data)
 						var goodsChecked = JSON.stringify(that.goodsChecked)
 						if (res.data.code == 200) {
 							uni.navigateTo({
-								url: "../order/confirmation?goodsChecked=" +goodsChecked
+								url: "../order/confirmation?goodsChecked=" + goodsChecked + "&sumPrice=" + that.sumPrice
 							})
 						} else {
 							uni.showToast({
@@ -301,17 +331,6 @@
 					}
 				})
 			},
-			// 删除商品s
-			// deleteList(){
-			// 	let len = this.selectedList.length;
-			// 	while (this.selectedList.length>0)
-			// 	{
-			// 		this.deleteGoods(this.selectedList[0]);
-			// 	}
-			// 	this.selectedList = [];
-			// 	this.isAllselected = this.selectedList.length == this.goodsList.length && this.goodsList.length>0;
-			// 	this.sum();
-			// },
 			// 选中商品
 			selected(index) {
 				this.goodsList[index].selected = this.goodsList[index].selected ? false : true;
@@ -319,12 +338,14 @@
 				i > -1 ? this.selectedList.splice(i, 1) : this.selectedList.push(this.goodsList[index].id);
 				this.isAllselected = this.selectedList.length == this.goodsList.length;
 				this.sum();
-				// let goodsChecked = {
-				//   goodsId: this.goodsList[index].goodsId,
-				//   number: this.goodsList[index].number
-				// }
-				// this.goodsChecked.push(goodsChecked)
-				// console.log("this.goodsChecked",this.goodsChecked)
+				if (this.goodsList[index].payMethod==1) {
+					this.qian = !this.qian;
+					console.log("this.qian",this.qian)
+				}
+				if (this.goodsList[index].payMethod==2) {
+					this.jifen = !this.jifen;
+					console.log("this.jifen",this.jifen)
+				}
 			},
 			//全选
 			allSelect() {
@@ -333,6 +354,14 @@
 				for (let i = 0; i < len; i++) {
 					this.goodsList[i].selected = this.isAllselected ? false : true;
 					arr.push(this.goodsList[i].id);
+					if(this.goodsList[i].selected) {
+						this.jifen = true;
+						this.qian  =true;
+					}else{
+						this.jifen = false;
+						this.qian  =false;
+						this.isAllselected = false;
+					}
 				}
 				this.selectedList = this.isAllselected ? [] : arr;
 				this.isAllselected = this.isAllselected || this.goodsList.length == 0 ? false : true;
@@ -365,12 +394,7 @@
 					}
 				}
 				this.sumPrice = this.sumPrice.toFixed(2);
-			},
-			discard() {
-				//丢弃
 			}
-
-
 		}
 	}
 </script>

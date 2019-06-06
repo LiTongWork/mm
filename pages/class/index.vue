@@ -36,13 +36,13 @@
 									<view class="product-price-num" v-if="value.payMethod==1">
 										{{value.currentPice}}元
 										<view class="product-sell-num">
-											已兑换{{value.number}}件
+											已兑换{{value.sales}}件
 										</view>
 									</view>
 									<view class="product-price-num" v-if="value.payMethod==2">
 										{{value.currentPice}}积分
 										<view class="product-sell-num">
-											已兑换{{value.number}}件
+											已兑换{{value.sales}}件
 										</view>
 									</view>
 									<image class="product-icon-add" src="../../static/imgs/icon-add.png" mode="" @click="addCart(value.id)"></image>
@@ -166,12 +166,9 @@
 					url: '/pages/goods/goods?id=' + id
 				});
 			},
-			//搜索跳转
-			// toSearch() {
-			// 	uni.navigateTo({
-			// 		url: '/pages/class/search'
-			// 	});
-			// }
+			// onPullDownRefresh() {
+			// 	this.category(0);
+			// },
 		}
 
 	}

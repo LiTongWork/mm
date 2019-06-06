@@ -121,6 +121,9 @@
 								mask: true,
 								duration: 1500
 							})	
+							if (res.data.code == 200) {
+								uni.navigateBack()
+							}
 						},
 						fail(res){
 							console.log(res)

@@ -38,11 +38,32 @@
 		},
 		onLoad(options) {
 			let that = this;
-			console.log(options)
-			that.integral = options.integral;
+			that.getIntegral();
 			that.getSign();
 		},
 		methods:{
+			// 获取积分信息
+			getIntegral () {
+				let that = this;
+				uni.request({
+					url: app.default.globalData.baseUrl + '/api/User/MyLoginInfo',
+					method: 'post',
+					header: {
+						'content-type': 'application/json',
+						'auth': app.default.globalData.token
+					},
+					dataType: "json",
+					success(res) {
+						console.log(res)
+						if(res.data.code == 200){
+							that.integral = res.data.data.integral;
+						}
+					},
+					fail(res){
+						console.log(res)
+					}
+				})				
+			},
 			// 获取签到信息
 			getSign(){
 				let that = this;

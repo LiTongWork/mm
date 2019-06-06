@@ -11,13 +11,15 @@
 			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "首页",
-				"app-plus":{"titleNView": false}
+				"app-plus":{"titleNView": false},
+				"enablePullDownRefresh": true
 			}
 		},{
 			"path": "pages/class/index",
 			"style": {
 				"navigationBarTitleText": "分类",
-				"app-plus":{"titleNView": false}
+				"app-plus":{"titleNView": false},
+				"enablePullDownRefresh": true
 			}
 		}, 
 		
@@ -32,7 +34,8 @@
 			"path": "pages/cart/index",
 			"style": {
 				"navigationBarTitleText": "购物车",
-				"app-plus":{"titleNView": false}
+				"app-plus":{"titleNView": false},
+				"enablePullDownRefresh": true
 			}
 		}, 
 		{
@@ -52,6 +55,16 @@
 				"enablePullDownRefresh": true
 			}
 		},
+		{
+		    "path" : "pages/mine/logistics",
+		    "style" : {
+				"navigationBarTitleText":"查看物流",
+				"navigationBarBackgroundColor":"#f8f8f8",
+				"backgroundColorTop":"#f3f3f3",
+				"backgroundColorBottom":"#ffffff",
+				"enablePullDownRefresh": true
+			}
+		},		
 		{
 		    "path" : "pages/mine/wallet",
 		    "style" : {
@@ -166,6 +179,26 @@
 			"path" : "pages/mine/evaluate",
 			"style" : {
 				"navigationBarTitleText":"发表评价",
+				"navigationBarBackgroundColor":"#f8f8f8",
+				"backgroundColorTop":"#f3f3f3",
+				"backgroundColorBottom":"#ffffff",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path" : "pages/order/confirmation",
+			"style" : {
+				"navigationBarTitleText":"确认订单",
+				"navigationBarBackgroundColor":"#f8f8f8",
+				"backgroundColorTop":"#f3f3f3",
+				"backgroundColorBottom":"#ffffff",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path" : "pages/goods/goods",
+			"style" : {
+				"navigationBarTitleText":"商品详情",
 				"navigationBarBackgroundColor":"#f8f8f8",
 				"backgroundColorTop":"#f3f3f3",
 				"backgroundColorBottom":"#ffffff",

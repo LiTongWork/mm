@@ -29,8 +29,14 @@
 				userInfo: {} //保存用户信息
 			}
 		},
-		onShow() {
+		onLoad(options) {
 			let that = this;
+			if (options.openId) {
+				uni.showModal({
+					title: 'openId',
+					content: options.openId
+				})
+			}
 			wx.login({
 				provider: 'weixin',
 				success: function(res) {

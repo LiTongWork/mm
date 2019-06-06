@@ -23,12 +23,12 @@
 			}
 		},
 		onShareAppMessage(){
-			if (res.from === 'button') {// 来自页面内分享按钮
-			  console.log(res.target)
-			}
+			// if (res.from === 'button') {// 来自页面内分享按钮
+			//   console.log(res)
+			// }
 			return {
 			  title: '我的分享',
-			  path: `/pages/mine/share?openId=${app.default.globalData.openId}`,
+			  path: `/pages/index/index?openId=${app.default.globalData.openId}`,
 			  success: function(res) {
 				// 转发成功
 				console.log(res)

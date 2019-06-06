@@ -8,38 +8,49 @@
 		</view>
 		<!-- 商品列表 -->
 		<view class="goods-list">
-			<view class="list-item" v-for="(item,index) in goodsList" :key='index'>
+			<view class="list-item" v-for="(item,index) in goodsList" :key='index' :data-indentId='item.indentId'>
 				<view class="number">
-					<view class="">订单号：<text>{{item.number}}</text></view>
-					<view>等待买家付款</view>
+					<view class="">订单号：<text>{{item.indentCode}}</text></view>
+					<view v-if="status == 0">等待买家付款</view>
+					<view v-if="status == 1">等待卖家发货</view>
+					<view v-if="status == 2">等待收货</view>
+					<view v-if="status == 3">评价</view>
 				</view>
-				<view class="content">
-					<view class="pic"><image :src="item.img"></image></view>
-					<view class="desc">
-						<view class="">
-							<view class="title">
-								<text>{{item.title}}</text>
-								<text class="count">x{{item.count}}</text>
+				<view class="content dianpu" v-for="(ite,inde) in item.indentList" :key='inde'>
+					<view class="shangpin" v-for="(it,ind) in ite.goodsList" :key='ind'>
+						<view class="pic"><image :src="imgUrl + it.goodsImg"></image></view>
+						<view class="desc">
+							<view class="">
+								<view class="title">
+									<text>{{it.goodsName}}</text>
+									<text class="count">x{{it.number}}</text>
+								</view>
+								<view class="freight">运费:{{it.freight > 0 ? it.freight : '免运费'}}</view>
 							</view>
-							<view class="freight">运费:{{item.freight > 0 ? item.freight : '免运费'}}</view>
+							<view class="price" v-if="item.payMethod == 1">￥{{it.money}}</view>
+							<view class="price" v-if="item.payMethod == 2">{{it.money}}积分</view>
 						</view>
-						<view class="price">￥{{item.price}}</view>
 					</view>
 				</view>
 				<view class="handle">
-					<view >取消订单</view>
-					<view class="black evaluate" @tap="toEvaluate">评价</view>
-					<view class="black pay">付款</view>
+					<!-- <view >取消订单</view> -->
+					<view class="black pay" v-if="item.indentStatus ==0" :data-paymethod='item.payMethod' :data-indentid='item.indentId' @tap="payAgain">付款</view>
+					<view class="" @tap="toLogistics" v-if="item.indentStatus == 2" :data-indentid='item.indentId'>查看物流</view>
+					<view class="black" @tap="confirmOrder" v-if="item.indentStatus == 2" :data-indentid='item.indentId'>确认收货</view>
+					<view class="black evaluate" @tap="toEvaluate" v-if="item.indentStatus == 3" :data-isreview='item.isReview'>{{ item.isReview ? '查看评价' : '评价' }}</view>
 				</view>
 			</view>
+			<view class="noData" v-if="goodsList.length == 0">暂无数据</view>
 		</view>
 	</view>
 </template>
 
 <script>
+	const app = require('../../App.vue')
 	export default {
 		data(){
 			return {
+				imgUrl: app.default.globalData.imgUrl,
 				nav: [
 					{
 						status: -1,
@@ -62,40 +73,30 @@
 						label: '待评价'
 					}
 				],
+				goodsList: [],
 				status: -1,
-				goodsList: [
-					{
-						number: '1234567890',
-						img: '/static/imgs/product.jpg',
-						title: '玻尿酸多效保湿蚕丝男女士免洗睡眠面膜补水保湿清洁收缩毛孔',
-						count: 1,
-						freight: 0,
-						price: 399
-					},
-					{
-						number: '1234567890',
-						img: '/static/imgs/product.jpg',
-						title: '玻尿酸多效保湿蚕丝男女士免洗睡眠面膜补水保湿清洁收缩毛孔',
-						count: 1,
-						freight: 0,
-						price: 399
-					}
-				]
+				page: 1,
+				rows: 10
 			}
 		},
 		onLoad(options) {
 			let that = this;
 			that.status = Number(options.status)
-			console.log(that.status)
+			console.log(that.status);
+			that.getList();
 		},
 		onPullDownRefresh() {
 			console.log('refresh');
-			setTimeout(function () {
-				uni.stopPullDownRefresh();
-			}, 1000);
+			let that = this;
+			that.page = 1;
+			that.goodsList = [];
+			that.getList();
 		},
 		onReachBottom() {
-			console.log('上拉触底')
+			console.log('上拉触底');
+			let that = this;
+			that.page++;
+			that.getList();
 		},
 		methods: {
 			// nav 切换
@@ -103,15 +104,184 @@
 				let that = this;
 				let status = e.currentTarget.dataset.status;
 				console.log(status);
-				that.status = status;
+				if (that.status != status) {
+					that.status = status;
+					that.page = 1;
+					that.goodsList = [];
+					that.getList();					
+				}
+			},
+			// 获取列表
+			getList(){
+				let that = this;
+				uni.showLoading();
+				let params = {
+					page: that.page,
+					rows: that.rows,
+					status: that.status
+				}
+				uni.request({
+					url: app.default.globalData.baseUrl + "/api/User/IndentHall",
+					method: "POST",
+					header: {
+						'content-type': 'application/json',
+						'auth': app.default.globalData.token
+					},
+					data: params,
+					dataType: "json",
+					success(res) {
+						console.log(res.data.data.list);
+						uni.hideLoading();
+						uni.stopPullDownRefresh();
+						if(res.data.code == 200) {
+							that.goodsList = that.goodsList.concat(res.data.data.list)
+						}
+					},
+					fail(res){
+						console.log(res)
+					}
+				})					
+			},
+			// 重新下单
+			payAgain (e) {
+				let that = this;
+				let payMethod = e.currentTarget.dataset.paymethod;
+				let indentId = e.currentTarget.dataset.indentid;
+				let params = {
+					openId: app.default.globalData.openId,
+					indentId: indentId
+				}
+				console.log(params)
+				if (payMethod == 1) {
+					// 人名币付款
+					uni.request({
+						url: app.default.globalData.baseUrl + '/api/User/AgainOrder',
+						method: "POST",
+						header: {
+							'content-type': 'application/json',
+							'auth': app.default.globalData.token
+						},
+						data: params,
+						dataType: "json",
+						success(res) {
+							console.log(res.data.data.data);
+							uni.requestPayment({
+								provider: 'wxpay',
+								timeStamp: res.data.data.data.timeStamp,
+								nonceStr: res.data.data.data.nonceStr,
+								package: res.data.data.data.prepayId,
+								signType: 'MD5',
+								paySign: res.data.data.data.sign,
+								success: function (res) {
+									console.log('success:' + JSON.stringify(res));
+									that.page = 1;
+									that.goodsList = [];
+									that.getList();
+								},
+								fail: function (err) {
+									console.log('fail:' + JSON.stringify(err));
+								}
+							});							
+						},
+						fail(res){
+							console.log(res)
+						}						
+					})
+				} else if (payMethod == 2) {
+					// 积分付款
+					uni.showModal({
+						title: '提示',
+						content: '是否重新积分兑换',
+						success(res) {
+							if (res.confirm) {
+								console.log('用户点击确定');
+								uni.request({
+									url: app.default.globalData.baseUrl + '/api/User/IntegralAgainOrder',
+									method: "POST",
+									header: {
+										'content-type': 'application/json',
+										'auth': app.default.globalData.token
+									},
+									data: params,
+									dataType: "json",
+									success(res) {
+										console.log(res);		
+										uni.showToast({
+											title: res.data.message,
+											icon: 'none',
+											mask: true,
+											duration: 1500
+										})
+										if (res.data.code == 200) {
+											that.page = 1;
+											that.goodsList = [];
+											that.getList();			
+										}
+										
+									},
+									fail(res){
+										console.log(res)
+									}						
+								})									
+							} else if (res.cancel) {
+								console.log('用户点击取消');
+							}							
+						}
+					})
+				
+				}
+			},
+			// 查看物流
+			toLogistics (e) {
+				console.log(e.currentTarget.dataset.indentid)
+				let indentId = e.currentTarget.dataset.indentid;
+				uni.navigateTo({
+					url: `/pages/mine/logistics?indentId=${indentId}`
+				})
+			},
+			// 确认收货
+			confirmOrder (e) {
+				let that = this;
+				console.log(e.currentTarget.dataset.indentid);
+				let indentId = e.currentTarget.dataset.indentid;
+				let params = {
+					indentId: indentId
+				}
+				uni.request({
+					url: app.default.globalData.baseUrl + "/api/User/ConfirmTake",
+					method: "POST",
+					header: {
+						'content-type': 'application/json',
+						'auth': app.default.globalData.token
+					},
+					data: params,
+					dataType: "json",
+					success(res) {
+						console.log(res);
+						uni.showToast({
+							title: res.data.message,
+							icon: 'none',
+							mask: true,
+							duration: 1500
+						})
+						if (res.data.code == 200) {
+							that.page = 1;
+							that.goodsList = [];
+							that.getList();
+						}
+					},
+					fail(res){
+						console.log(res)
+					}
+				})	
 			},
 			// 评价
 			toEvaluate (e) {
-				let that = this;
 				uni.navigateTo({
 					url: '/pages/mine/evaluate'
 				})
 			}
+			
 		}
 	}
 </script>
@@ -164,7 +334,8 @@
 		justify-content: space-between;
 		line-height: 100upx;
 	}
-	.goods-list .list-item .content {
+	.goods-list .list-item .content .shangpin {
+		margin-bottom: 16upx;
 		display: flex;
 		justify-content: space-between;
 	}
