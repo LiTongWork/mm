@@ -1,9 +1,9 @@
 <template>
 	<view class="container">
 		<view class="info">
-			<view class="pic">
+<!-- 			<view class="pic">
 				<image src="../../static/imgs/default.png"></image>
-			</view>
+			</view> -->
 			<view class="desc">
 				<view class="title">{{title}}</view>
 				<view class="rate">
@@ -16,18 +16,18 @@
 			</view>
 		</view>
 		<view class="content">
-			<textarea auto-height="true" maxlength="100" placeholder="输入您的评价吧(5-100字)" v-model="evaluateText"></textarea>
+			<textarea auto-height="true" maxlength="100" placeholder="输入您的评价吧(5-100字)" :readonly=" isReview == 'false' ? '' : 'readonly' " v-model="evaluateText"></textarea>
 			<view class="photos" @tap="uploadImage">
 				<view class="photo-list" v-for="(item,index) in photoList" :key='index'>
 					<image :src="imgUrl + item"></image>
 				</view>
-				<view v-if="photoList.length == 0" class="btn">
+				<view v-if="photoList.length == 0 && isReview == 'false' " class="btn">
 					<image src="/static/imgs/camera.png"></image>
 				</view>
 
 			</view>
 		</view>
-		<view class="sub" v-if="!false"><button>发表评价</button></view>
+		<view class="sub" v-if="isReview == 'false' "><button @tap="sub">发表评价</button></view>
 	</view>
 </template>
 
@@ -39,33 +39,66 @@
 				imgUrl: app.default.globalData.imgUrl,
 				uniIconSize: 24,
 				pic: '',
-				title: '世事如棋，乾坤莫测，笑尽英雄啊',
+				title: '',
 				rate: 0,
 				evaluateText: '',
 				photoList: [],
-				isReview: false
+				isReview: 'false',
+				indentId: '',
+				status: ''
 			}
 		},
 		onLoad(options) {
 			let that = this;
-			uni.getSystemInfo({
-				success: function(res) {
-					that.uniIconSize = (24 / 750) * Number(res.windowWidth)
-				}
-			});
+			that.indentId = options.indentId;
+			that.isReview = options.isReview;
+			that.status = options.status;
+			if (that.isReview == 'true') {
+				that.getDetail();
+			}
 		},
 		methods: {
+			// 获取评价内容
+			getDetail(){
+				let that = this;
+				let params = {
+					indentId: that.indentId
+				}
+				uni.request({
+					url: app.default.globalData.baseUrl + "/api/User/ReviewDetails",
+					method: "POST",
+					header: {
+						'content-type': 'application/json',
+						'auth': app.default.globalData.token
+					},
+					data: params,
+					dataType: "json",
+					success(res) {
+						console.log(res);
+						if (res.data.code == 200) {
+							that.rate = res.data.data.star;
+							that.evaluateText = res.data.data.content;
+							that.photoList = res.data.data.imgList;
+						}
+					},
+					fail(res){
+						console.log(res)
+					}
+				})					
+			},
 			// 评论星星
 			selStar(e) {
 				let that = this;
-				that.rate = Number(e.currentTarget.dataset.i)
+				if (that.isReview == 'false') {
+					that.rate = Number(e.currentTarget.dataset.i)
+				}
 			},
 			// 拍照选择图片
 			uploadImage: function() {
 				let that = this;
-				// let url = that.data.url;
+				let url = app.default.globalData.baseUrl + '/api/Upload/UploadImg';
 				let arr = [];
-				if (!that.isReview) {
+				if (that.isReview == 'false') {
 					uni.chooseImage({
 						count: 3,
 						sizeType: ['original', 'compressed'],
@@ -73,9 +106,9 @@
 						success: function(res) {
 							// tempFilePath可以作为img标签的src属性显示图片
 							const tempFilePaths = res.tempFilePaths;
-							console.log(tempFilePaths);
+							// console.log(tempFilePaths);
 							//启动上传等待中...  
-							wx.showToast({
+							uni.showToast({
 								title: '正在上传...',
 								icon: 'loading',
 								mask: true,
@@ -83,43 +116,109 @@
 							})
 							var uploadImgCount = 0;
 							for (var i = 0, h = tempFilePaths.length; i < h; i++) {
-// 								wx.uploadFile({
-// 									url: url,
-// 									filePath: tempFilePaths[i],
-// 									name: 'fileName',
-// 									formData: {
-// 										'imgIndex': i
-// 									},
-// 									header: {
-// 										"Content-Type": "multipart/form-data"
-// 									},
-// 									success: function(res) {
-// 
-// 										uploadImgCount++;
-// 										var data = JSON.parse(res.data);
-// 										arr.push(data.data.fileName);
-// 										that.setData({
-// 											picList: arr
-// 										})
-// 										//如果是最后一张,则隐藏等待中  
-// 										if (uploadImgCount == tempFilePaths.length) {
-// 											wx.hideToast();
-// 										}
-// 									},
-// 									fail: function(res) {
-// 										wx.hideToast();
-// 										wx.showModal({
-// 											title: '错误提示',
-// 											content: '上传图片失败',
-// 											showCancel: false,
-// 											success: function(res) {}
-// 										})
-// 									}
-// 								});
+								uni.uploadFile({
+									url: url,
+									filePath: tempFilePaths[i],
+									name: 'fileName',
+									formData: {
+										'imgIndex': i
+									},
+									header: {
+										"Content-Type": "multipart/form-data"
+									},
+									success: function(res) {
+
+										uploadImgCount++;
+										var data = JSON.parse(res.data);
+										arr.push(data.data.fileName);
+										that.photoList = arr;
+										//如果是最后一张,则隐藏等待中  
+										if (uploadImgCount == tempFilePaths.length) {
+											uni.hideToast();
+										}
+									},
+									fail: function(res) {
+										uni.hideToast();
+										uni.showModal({
+											title: '错误提示',
+											content: '上传图片失败',
+											showCancel: false,
+											success: function(res) {}
+										})
+									}
+								});
 							}
 						},
 					})
 				}
+			},
+			// 发布评价
+			sub () {
+				let that = this;
+				console.log(that.photoList)
+				let params = {
+					indentId: that.indentId,
+					star: that.rate,
+					content: that.evaluateText,
+					imgList: that.photoList.length 
+				}
+				if (params.star == 0) {
+					uni.showToast({
+						title: '请先评价星级',
+						icon: 'none',
+						mask: true,
+						duration: 1500
+					})
+				} else if (params.content.length == 0) {
+					uni.showToast({
+						title: '请输入评价内容',
+						icon: 'none',
+						mask: true,
+						duration: 1500
+					})					
+				} else if (params.content.length < 5) {
+					uni.showToast({
+						title: '评价内容不少于五个字',
+						icon: 'none',
+						mask: true,
+						duration: 1500
+					})					
+				} else {
+					uni.request({
+						url: app.default.globalData.baseUrl + "/api/User/AddReview",
+						method: "POST",
+						header: {
+							'content-type': 'application/json',
+							'auth': app.default.globalData.token
+						},
+						data: params,
+						dataType: "json",
+						success(res) {
+							console.log(res);
+							uni.showToast({
+								title: res.data.message,
+								icon: 'none',
+								mask: true,
+								duration: 1500
+							})
+							if (res.data.code == 200) {
+								setTimeout(() => {
+									uni.switchTab({
+										url: '/pages/mine/mine'
+									})
+									// uni.redirectTo({
+									// 	url: `/pages/mine/order?status=${that.status}`
+									// })
+								},1500)
+							}
+						},
+						fail(res){
+							console.log(res)
+						}
+					})						
+				}
+				console.log(params);
+				
 			}
 		}
 	}
@@ -192,7 +291,7 @@
 		margin: 30upx 0;
 		display: flex;
 		flex-wrap: wrap;
-		justify-content: space-between;
+		/* justify-content: ; */
 	}
 
 	.content .photos view {
@@ -200,6 +299,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		margin-right: 10upx;
 	}
 
 	.content .photos view,

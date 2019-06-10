@@ -31,12 +31,6 @@
 		},
 		onLoad(options) {
 			let that = this;
-			if (options.openId) {
-				uni.showModal({
-					title: 'openId',
-					content: options.openId
-				})
-			}
 			wx.login({
 				provider: 'weixin',
 				success: function(res) {
@@ -66,6 +60,23 @@
 										}
 									}
 								})
+								if (options.openId) {
+									uni.request({
+										url: app.default.globalData.baseUrl + "/api/login/UserLogin",
+										method: "POST",
+										header: {
+											'content-type': 'application/x-www-form-urlencoded'
+										},
+										dataType: "json",
+										data: {
+											wechatCode: res.code,
+											metadata:options.openId
+										},
+										success(res) {
+											console.log(res.data)
+										}
+									})
+								}
 							}
 						})
 					}

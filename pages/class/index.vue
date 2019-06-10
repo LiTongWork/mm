@@ -3,7 +3,7 @@
 		<!-- 状态栏 -->
 		<view class="status" :style="{position:headerPosition}"></view>
 		<view class="header" :style="{position:headerPosition}">
-			<view class="input-box" @tap="toSearch()">
+			<view class="input-box" @click="toSearch()">
 				<image class="icon-search" src="/static/imgs/icon-search.png" mode=""></image>
 				<input placeholder="请输入关键词" placeholder-style="color:#c0c0c0;" />
 			</view>
@@ -82,6 +82,12 @@
 			this.category(0);
 		},
 		methods: {
+			// 搜索商品
+			toSearch() {
+				uni.navigateTo({
+					url:"search"
+				})
+			},
 			//分类类别
 			category: function(index) {
 				let that = this;
@@ -380,8 +386,8 @@
 						}
 
 						.product-icon-add {
-							width: 35upx;
-							height: 35upx;
+							width: 45upx;
+							height: 45upx;
 						}
 					}
 				}

@@ -4,76 +4,38 @@
 		<view class="status" :style="{position:headerPosition}"></view>
 		<view class="header" :style="{position:headerPosition}">
 			<view class="input-box">
-				<image class="icon-search" src="/static/imgs/icon-search.png" mode=""></image>
-				<input placeholder="请输入关键词" focus confirm-type="search" v-model="searchBox" placeholder-style="color:#c0c0c0;"/>
+				<image class="icon-search" src="/static/imgs/icon-search.png" mode="" @click="search()"></image>
+				<input placeholder="请输入关键词" focus confirm-type="search" v-model="seachName" placeholder-style="color:#c0c0c0;"/>
 			</view>
-			<view class="cancel" @tap="back()">
+			<!-- <view class="cancel" @tap="back()">
 				取消
-			</view>
+			</view> -->
 		</view>
 		
+		<view style="text-align: center;margin-top: 300rpx;" v-if="goodsList.length==0">
+			<text>暂无商品哦~</text>
+		</view>
 		<!-- 产品列表 -->
-		<view class="lists main">
-			<view class="product-item">
-				<image class="product-img" src="/static/imgs/product.png" mode="" lazy-load="true"></image>
+		<view class="lists main" v-if="goodsList.length!=0">
+			<view class="product-item" v-for="(value,index) in goodsList" :key="index">
+				<image class="product-img" :src="imgUrl+value.goodsImg" mode="" lazy-load="true" @click="goDetil(value.id)"></image>
 				<view class="product-title">
-                    积分兑换商品  TNN玻尿酸补水蚕丝面膜1盒    
+                    {{value.goodsName}}
 				</view>
 				<view class="product-price">
-					<view class="product-price-num">
-						500积分
+					<view class="product-price-num" v-if="value.payMethod==1">
+						{{value.currentPice}}元
 						<view class="product-sell-num">
-							已兑换32435件
+							已兑换{{value.sales}}件
 						</view>
 					</view>
-					<image class="product-icon-add" src="../../static/imgs/icon-add.png" mode=""></image>
-				</view>
-			</view>
-			<view class="product-item">
-				<image class="product-img" src="/static/imgs/product.png" mode="" lazy-load="true"></image>
-				<view class="product-title">
-                    积分兑换商品  TNN玻尿酸补水蚕丝面膜1盒    
-				</view>
-				<view class="product-price">
-					<view class="product-price-num">
-						￥399
+					<view class="product-price-num" v-if="value.payMethod==2">
+						{{value.currentPice}}积分
 						<view class="product-sell-num">
-							已售出32435件
+							已兑换{{value.sales}}件
 						</view>
 					</view>
-					<image class="product-icon-add" src="../../static/imgs/icon-add.png" mode=""></image>
-				</view>
-			</view>
-			<view class="product-item">
-				<image class="product-img" src="/static/imgs/product.png" mode="" lazy-load="true"></image>
-				<view class="product-title">
-                    积分兑换商品  TNN玻尿酸补水蚕丝面膜1盒    
-				</view>
-				<view class="product-price">
-					<view class="product-price-num">
-						500积分
-						<view class="product-sell-num">
-							已兑换32435件
-						</view>
-					</view>
-					
-					<image class="product-icon-add" src="../../static/imgs/icon-add.png" mode=""></image>
-				</view>
-			</view>
-			<view class="product-item">
-				<image class="product-img" src="/static/imgs/product.png" mode="" lazy-load="true"></image>
-				<view class="product-title">
-                    积分兑换商品  TNN玻尿酸补水蚕丝面膜1盒    
-				</view>
-				<view class="product-price">
-					<view class="product-price-num">
-						￥399
-						<view class="product-sell-num">
-							已售出32435件
-						</view>
-					</view>
-					
-					<image class="product-icon-add" src="../../static/imgs/icon-add.png" mode=""></image>
+					<image class="product-icon-add" src="../../static/imgs/icon-add.png" mode="" @click="addCart(value.id)"></image>
 				</view>
 			</view>
 		</view>
@@ -82,12 +44,17 @@
 
 
 <script>
+	var app = require("../../App.vue")
 	export default {
 		data() {
 			return {
 				showCategoryIndex: 0,
 				headerPosition: "fixed",
-				searchBox: "TNT面膜"
+				imgUrl: app.default.globalData.imgUrl, //图片拼接位置
+				seachName: "",//搜索词
+				goodsList:[],//商品列表
+				page:1,
+				rows:6
 			}
 		},
 		onPageScroll(e) {
@@ -99,19 +66,83 @@
 			}
 		},
 		onLoad() {
-			
+			console.log(this.goodsList, typeof this.goodsList)
 		},
 		methods: {
+			//搜索商品
+			search() {
+				console.log(this.seachName);
+				this.list(this.seachName,this.page,this.rows)
+			},
+			//跳转到详情
+			goDetil(id) {
+				uni.navigateTo({
+					url:"../goods/goods?id="+id
+				})
+			},
+			// 商品列表
+			list:function(seachName,page,rows){
+				let that = this;
+				uni.request({
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						"auth": app.default.globalData.token
+					},
+					method: "POST",
+					dataType: 'json',
+					url: app.default.globalData.baseUrl + "/api/Class/SearchGoods",
+					data: {
+						SeachName:seachName,
+						page:page,
+						rows:rows
+					},
+					success(res) {
+						console.log(res.data);
+						that.goodsList = that.goodsList.concat(res.data.data.list)
+					}
+				})
+			},
+			//加入购物车
+			addCart(id) {
+				let that = this;
+				uni.request({
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						"auth": app.default.globalData.token
+					},
+					method: "POST",
+					dataType: 'json',
+					url: app.default.globalData.baseUrl + "/api/Store/AddCar",
+					data: {
+						goodsId:id,
+						Number: 1
+					},
+					success(res) {
+						console.log(res.data)
+						if (res.data.code == 200) {
+							uni.showToast({
+								duration: 1500,
+								title:res.data.message,
+								icon: "none"
+							});
+						}
+					}
+				})
+			},
 			//取消返回上一页 
 			back(){
 				uni.navigateBack({
 					delta: 1
 				});
 			},
-			//搜索
-			toSearch() {
-				console.log(123)
-			}
+			onPullDownRefresh() {
+				this.list(this.seachName,this.page,this.rows)
+			},
+			onReachBottom() {
+				let that = this;
+				that.page++;
+				that.list(that.seachName,that.page,that.rows)
+			},
 		}
 
 	}
@@ -147,10 +178,10 @@
 
 		.input-box {
 			width: 100%;
-			height: 60upx;
+			height: 80upx;
 			background-color: #FFF;
 			border:1upx solid #CBCBCB;
-			border-radius: 30upx;
+			border-radius: 50upx;
 			position: relative;
 			display: flex;
 			align-items: center;

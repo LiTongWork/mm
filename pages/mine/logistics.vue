@@ -1,14 +1,14 @@
 <template>
 	<view class="container">
 		<view class="list"> 
-			<view class="list-item" v-for="(item,index) in list" :key='index'>
+			<view class="list-item">
 				<!-- <view class="pic"><image :src="item.pic"></image></view> -->
 				<view class="desc">
-					<view class="name">快递公司:<text>{{item.name}}</text></view>
-					<view class="number">快递单号:<text>{{item.number}}</text></view>
-					<view class="tel">联系电话:<text>{{item.tel}}</text></view>
+					<view class="name">快递公司:<text>{{list.logisticsName ? list.logisticsName : ''}}</text></view>
+					<view class="number">快递单号:<text>{{list.logisticsCode ? list.logisticsCode : ''}}</text></view>
+					<!-- <view class="tel">联系电话:<text>{{list.tel}}</text></view> -->
 				</view>
-				<view class="copy" @tap="copyNumber" :data-number='item.number'>复制单号</view>
+				<view class="copy" @tap="copyNumber" :data-number='list.logisticsCode'>复制单号</view>
 			</view>
 		</view>
 	</view>
@@ -20,14 +20,7 @@
 		data(){
 			return {
 				indentId: '',
-				list: [
-					{
-						pic: '',
-						name: '韵达快递',
-						number: '12345678',
-						tel: '123456'
-					}
-				]
+				list: {}
 			}
 		},
 		onLoad(options) {
@@ -50,7 +43,7 @@
 				let that = this;
 				uni.showLoading();
 				let params = {
-					id: that.indentId
+					indentId: that.indentId
 				}
 				uni.request({
 					url: app.default.globalData.baseUrl + "/api/User/CheckLogistics",
@@ -65,7 +58,7 @@
 						console.log(res);
 						uni.hideLoading();
 						if(res.data.code == 200) {
-							
+							that.list = res.data.data
 						}
 					},
 					fail(res){

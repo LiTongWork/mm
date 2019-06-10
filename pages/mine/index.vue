@@ -11,7 +11,7 @@
 					<text class="text">{{userInfo.nickName}}</text>
 					<view class="level">V{{userInfo.level}}</view>
 				</view>
-				<view class=""><text>ID: {{userInfo.id}}</text></view>
+				<!-- <view class=""><text>ID: {{userInfo.id}}</text></view> -->
 				<view class="referees"><text>推荐人: {{userInfo.driveNickName ? userInfo.driveNickName : '无'}}</text></view>
 			</view>
 		</view>

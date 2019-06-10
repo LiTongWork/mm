@@ -1,10 +1,10 @@
 <template>
 	<view class="container">
 		<view class="posters">
-			<image src="/static/imgs/399product.jpg" mode="aspectFill"></image>
+			<image :src="imgUrl + posters" mode="aspectFill"></image>
 		</view>
 		<view class="handle">
-			<button class="download">下载海报</button>
+			<!-- <button class="download">下载海报</button> -->
 			<button class="share" open-type="share">分享朋友</button>
 		</view>
 	</view>
@@ -13,14 +13,15 @@
 <script>
 	const app = require('../../App.vue');
 	export default {
+		data () {
+			return {
+				imgUrl: app.default.globalData.imgUrl,
+				posters: ''
+			}
+		},
 		onLoad(options){
 			let that = this;
-			if (options.openId) {
-				uni.showModal({
-					title: 'openId',
-					content: options.openId
-				})
-			}
+			that.getPosters()
 		},
 		onShareAppMessage(){
 			// if (res.from === 'button') {// 来自页面内分享按钮
@@ -28,7 +29,7 @@
 			// }
 			return {
 			  title: '我的分享',
-			  path: `/pages/index/index?openId=${app.default.globalData.openId}`,
+			  path: `/pages/login/login?openId=${app.default.globalData.openId}`,
 			  success: function(res) {
 				// 转发成功
 				console.log(res)
@@ -38,6 +39,29 @@
 				console.log(res)
 			  }			  
 			}			
+		},
+		methods: {
+			// 获取海报
+			getPosters(){
+				let that = this;
+				uni.request({
+					url: app.default.globalData.baseUrl + '/api/Home/AdvList',
+					method: 'post',
+					header: {
+						'content-type': 'application/json',
+						'auth': app.default.globalData.token
+					},
+					success(res) {
+						console.log(res);
+						if (res.data.code == 200) {
+							that.posters = res.data.data[0].advUrl
+						}
+					},
+					fail(res){
+						console.log(res)
+					}					
+				})
+			}
 		}
 	}
 </script>

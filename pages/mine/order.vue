@@ -11,10 +11,11 @@
 			<view class="list-item" v-for="(item,index) in goodsList" :key='index' :data-indentId='item.indentId'>
 				<view class="number">
 					<view class="">订单号：<text>{{item.indentCode}}</text></view>
-					<view v-if="status == 0">等待买家付款</view>
-					<view v-if="status == 1">等待卖家发货</view>
-					<view v-if="status == 2">等待收货</view>
-					<view v-if="status == 3">评价</view>
+					<view :data-status='item.indentStatus' v-if="item.indentStatus == 0">等待买家付款</view>
+					<view :data-status='item.indentStatus' v-if="item.indentStatus == 1">等待卖家发货</view>
+					<view :data-status='item.indentStatus' v-if="item.indentStatus == 2">等待收货</view>
+					<view :data-status='item.indentStatus' v-if="item.indentStatus == 3 && !item.isReview ">待评价</view>
+					<view :data-status='item.indentStatus' v-if="item.indentStatus == 3 && item.isReview ">已评价</view>
 				</view>
 				<view class="content dianpu" v-for="(ite,inde) in item.indentList" :key='inde'>
 					<view class="shangpin" v-for="(it,ind) in ite.goodsList" :key='ind'>
@@ -37,7 +38,7 @@
 					<view class="black pay" v-if="item.indentStatus ==0" :data-paymethod='item.payMethod' :data-indentid='item.indentId' @tap="payAgain">付款</view>
 					<view class="" @tap="toLogistics" v-if="item.indentStatus == 2" :data-indentid='item.indentId'>查看物流</view>
 					<view class="black" @tap="confirmOrder" v-if="item.indentStatus == 2" :data-indentid='item.indentId'>确认收货</view>
-					<view class="black evaluate" @tap="toEvaluate" v-if="item.indentStatus == 3" :data-isreview='item.isReview'>{{ item.isReview ? '查看评价' : '评价' }}</view>
+					<view class="black evaluate" @tap="toEvaluate" v-if="item.indentStatus == 3" :data-status='item.indentStatus' :data-isreview='item.isReview' :data-indentid='item.indentId'>{{ item.isReview ? '查看评价' : '评价' }}</view>
 				</view>
 			</view>
 			<view class="noData" v-if="goodsList.length == 0">暂无数据</view>
@@ -84,6 +85,9 @@
 			that.status = Number(options.status)
 			console.log(that.status);
 			that.getList();
+		},
+		onShow () {
+			let that = this;
 		},
 		onPullDownRefresh() {
 			console.log('refresh');
@@ -277,8 +281,12 @@
 			},
 			// 评价
 			toEvaluate (e) {
+				let indentId = e.currentTarget.dataset.indentid;
+				let isReview = e.currentTarget.dataset.isreview;
+				let status = e.currentTarget.dataset.status;
 				uni.navigateTo({
-					url: '/pages/mine/evaluate'
+					url: `/pages/mine/evaluate?indentId=${indentId}&isReview=${isReview}&status=${status}`,
+					// url: 'pages/mine/index'
 				})
 			}
 			

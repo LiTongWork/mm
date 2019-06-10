@@ -27,7 +27,8 @@
 			"path": "pages/class/search",
 			"style": {
 				"navigationBarTitleText": "搜索 ",
-				"app-plus":{"titleNView": false}
+				"app-plus":{"titleNView": false},
+				"enablePullDownRefresh": true
 			}
 		},
 		{

@@ -83,8 +83,8 @@
 			};
 		},
 		onLoad(e) {
-			console.log(JSON.parse(e.goodsChecked));
-			console.log(e.sumPrice);
+			console.log(e.goodsChecked);
+			// console.log(e.sumPrice);
 			this.allPrice = e.sumPrice
 			this.goodsChecked = JSON.parse(e.goodsChecked)
 			this.orderList(this.goodsChecked);

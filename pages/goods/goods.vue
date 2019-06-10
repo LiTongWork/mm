@@ -28,7 +28,7 @@
 			</view>
 			<view class="btn">
 				<view class="joinCart" @tap="joinCart">加入购物车</view>
-				<view class="buy" @tap="buy">立即购买</view>
+				<view class="buy" @tap="buy()">立即购买</view>
 			</view>
 		</view>
 		<!-- 规格-模态层弹窗 -->
@@ -196,9 +196,9 @@
 				})
 			},
 			//消息列表
-			toMsg() {
+			share() {
 				uni.navigateTo({
-					url: '../msg/msg'
+					url: '../mine/share'
 				})
 			},
 			// 客服
@@ -258,12 +258,14 @@
 			},
 			//立即购买
 			buy() {
-				if (this.selectSpec == null) {
-					return this.showSpec(() => {
-						this.toConfirmation();
-					});
-				}
-				this.toConfirmation();
+				let goodsChecked =[{
+					goodsId:this.id,
+					number:"1"
+				}]	
+				// console.log(goodsChecked)
+				uni.navigateTo({
+					url:"../order/confirmation?goodsChecked="+JSON.stringify(goodsChecked)
+				})
 			},
 			//跳转确认订单页面
 			toConfirmation() {
