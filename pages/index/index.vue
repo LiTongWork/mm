@@ -187,6 +187,7 @@
 				this.signShow();//签到图
 				this.mainGood();//主商品广告位
 				this.indexGoods(this.page,this.rows)//主页商品列表
+				uni.stopPullDownRefresh();
 			},
 			
 		}

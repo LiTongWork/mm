@@ -138,7 +138,7 @@
 					},
 					dataType: "json",
 					success(res) {
-						// console.log(res);
+						console.log(res);
 						if(res.data.code == 200) {
 							res.data.data.headImg = JSON.parse(res.data.data.headImg);
 							res.data.data.nickName = JSON.parse(res.data.data.nickName);

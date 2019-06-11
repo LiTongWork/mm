@@ -151,6 +151,7 @@
 		text-align: center;
 	}
 	.info .content {
+		background-color: transparent;
 		position: relative;
 		width: 750upx;
 		height: 1000upx;
@@ -160,11 +161,12 @@
 		position: absolute;
 		left: 0;
 		top: 0;
-		z-index: -1;
 		width: 100%;;
 		height: 100%;
 	}
 	.info .integral {
+		position: relative;
+		z-index: 1;
 		height: 200upx;
 		text-align: center;
 		color: #fff;
@@ -181,6 +183,8 @@
 		line-height: 40upx;
 	}
 	.info .signDays {
+		position: relative;
+		z-index: 1;
 		margin-top: 280upx;
 		font-size: 26upx;
 		text-align: center;
@@ -190,6 +194,8 @@
 	}
 	
 	.signStatus {
+		position: relative;
+		z-index: 1;
 		margin-top: 120upx;
 		padding: 0 70upx;
 		display: flex;
@@ -206,6 +212,8 @@
 		font-size: 22upx;
 	}
 	.handle {
+		position: relative;
+		z-index: 1;
 		margin-top: 40upx;
 	}
 	.handle button {

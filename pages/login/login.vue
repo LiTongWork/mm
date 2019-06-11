@@ -30,6 +30,10 @@
 			}
 		},
 		onLoad(options) {
+			// uni.showToast({
+			// 	title:options.openId,
+			// 	duration:2000
+			// })
 			let that = this;
 			wx.login({
 				provider: 'weixin',
@@ -44,12 +48,13 @@
 							},
 							dataType: "json",
 							data: {
-								wechatCode: res.code
+								wechatCode: res.code,
+								metadata:options.openId
 							},
 							success(e) {
+								console.log("e:" + JSON.stringify(e.data));
 								app.default.globalData.openId = e.data.data.openId;
 								app.default.globalData.token = e.data.data.token;
-								console.log("e:" + JSON.stringify(e.data));
 								wx.getSetting({
 									success(res) {
 										console.log(JSON.stringify(res.authSetting))
@@ -60,28 +65,20 @@
 										}
 									}
 								})
-								if (options.openId) {
-									uni.request({
-										url: app.default.globalData.baseUrl + "/api/login/UserLogin",
-										method: "POST",
-										header: {
-											'content-type': 'application/x-www-form-urlencoded'
-										},
-										dataType: "json",
-										data: {
-											wechatCode: res.code,
-											metadata:options.openId
-										},
-										success(res) {
-											console.log(res.data)
-										}
-									})
-								}
 							}
 						})
 					}
 				}
 			})
+			// if(!options.openId) {
+			// 	
+			// }else {
+			// 	uni.showToast({
+			// 		title:options.openId,
+			// 		duration:2000
+			// 	})
+			// }
+			
 			console.log(app.default.globalData.openid)
 		},
 		methods: {

@@ -88,8 +88,22 @@
 			<view class="detail-title">
 				<text :class="[leftDetail?'activePart':'detail-tag']" @click="detail">商品详情</text><text :class="[rightDetail?'activePart':'detail-tag']" @click="pingjia">评价</text>
 			</view>
-			<view class="" style="flex-direction: column;">
+			<view class="" style="flex-direction: column;" v-if="leftDetail">
 				<rich-text style="font-size: 20px;line-height: 150%;" :nodes="goodsContent"></rich-text>
+			</view>
+			<view class="ping-list" v-if="rightDetail">
+				<view class="ping-tag" v-for="(value,index) in list" :key="index">
+					<view class="ping-item">
+						<image class="ping-img" :src="value.headImg" mode=""></image>
+						<view class="ping-text">
+							<text>{{value.nickName}}</text>
+							<text>{{value.createTime}}</text>
+						</view>
+					</view>
+					<view class="ping-word">
+						<rich-text :nodes="value.content"></rich-text>
+					</view>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -123,17 +137,21 @@
 				// 商品信息
 				id: "",
 				goodsName: "",
-				payMethod:"",//1是人民币，2是积分
+				payMethod: "", //1是人民币，2是积分
 				currentPice: 0,
 				originalPice: "",
 				freight: 0,
 				sales: "", //销量
-				goodsContent:"",//详情内容
-				leftDetail:true,//左边切换
-				rightDetail:false//右边切换
+				goodsContent: "", //详情内容
+				leftDetail: true, //左边切换
+				rightDetail: false, //右边切换
+				page: 1,
+				rows: 2,
+				list: [] //评价列表
 			};
 		},
 		onLoad(option) {
+			this.page = 1
 			// #ifdef MP
 			//小程序隐藏返回按钮
 			this.showBack = false;
@@ -143,23 +161,11 @@
 			this.detailGoods(option.id);
 			this.id = option.id
 		},
-		onPageScroll(e) {
-			//锚点切换
-			this.selectAnchor = e.scrollTop >= this.anchorlist[2].top ? 2 : e.scrollTop >= this.anchorlist[1].top ? 1 : 0;
-			//导航栏渐变
-			let tmpY = 375;
-			e.scrollTop = e.scrollTop > tmpY ? 375 : e.scrollTop;
-			this.afterHeaderOpacity = e.scrollTop * (1 / tmpY);
-			this.beforeHeaderOpacity = 1 - this.afterHeaderOpacity;
-			//切换层级
-			this.beforeHeaderzIndex = e.scrollTop > 0 ? 10 : 11;
-			this.afterHeaderzIndex = e.scrollTop > 0 ? 11 : 10;
-		},
 		//上拉加载，需要自己在page.json文件中配置"onReachBottomDistance"
 		onReachBottom() {
-			uni.showToast({
-				title: '触发上拉加载'
-			});
+			let that = this;
+			that.page = that.page + 1
+			that.evaluation(that.page, that.rows)
 		},
 		methods: {
 			// 商品详情
@@ -213,15 +219,48 @@
 					url: "../index/index"
 				})
 			},
-			detail(){
-				let that =this;
+			evaluation: function(page, rows) {
+				let that = this;
+				uni.request({
+					header: {
+						'content-type': 'application/x-www-form-urlencoded',
+						"auth": app.default.globalData.token
+					},
+					method: "POST",
+					dataType: 'json',
+					url: app.default.globalData.baseUrl + "/api/User/ReviewPage",
+					data: {
+						goodsId: that.id,
+						page: page,
+						rows: rows
+					},
+					success(res) {
+						if (res.data.code == 200) {
+							that.list = that.list.concat(res.data.data.list);
+							for (var i = 0; i < that.list.length; i++) {
+								// var time = res.data.data.list[i].createTime;
+								// that.list[i].createTime=[]
+								that.list[i].createTime =res.data.data.list[i].createTime.replace("T", " ")
+								// that.list[i].createTime = app.default.changeDate(time)
+								// var htmlString = that.list.concat(res.data.data.list[i].content).replace(/\\/g, "").replace(/<img/g,
+								// 	"<img style=\"max-width:100%;height:auto;\"");
+								// that.list[i].content = htmlParser(htmlString);
+							}
+						}
+					}
+				})
+			},
+			detail() {
+				let that = this;
 				that.leftDetail = true;
-				that.rightDetail = false
+				that.rightDetail = false;
 			},
 			pingjia() {
-				let that =this;
+				let that = this;
 				that.leftDetail = false;
-				that.rightDetail = true
+				that.rightDetail = true;
+				that.evaluation(that.page, that.rows);
+				console.log("====")
 			},
 			//前往购物车
 			goCart() {
@@ -307,49 +346,6 @@
 			//增加数量
 			add() {
 				this.goodsData.number++;
-			},
-			//跳转锚点
-			toAnchor(index) {
-				this.selectAnchor = index;
-				uni.pageScrollTo({
-					scrollTop: this.anchorlist[index].top,
-					duration: 200
-				});
-			},
-
-			//返回上一页
-			back() {
-				uni.navigateBack();
-			},
-			//关闭服务弹窗
-			hideService() {
-				this.serviceClass = 'hide';
-				setTimeout(() => {
-					this.serviceClass = 'none';
-				}, 200);
-			},
-			//规格弹窗
-			showSpec(fun) {
-				console.log('show');
-				this.specClass = 'show';
-				this.specCallback = fun;
-			},
-			specCallback() {
-				return;
-			},
-			//关闭规格弹窗
-			hideSpec() {
-				this.specClass = 'hide';
-				//回调
-
-				this.selectSpec && this.specCallback && this.specCallback();
-				this.specCallback = false;
-				setTimeout(() => {
-					this.specClass = 'none';
-				}, 200);
-			},
-			discard() {
-				//丢弃
 			}
 		}
 	};
@@ -363,6 +359,7 @@
 		display: flex;
 		flex: 1;
 		flex-direction: column;
+		margin-bottom: 99rpx;
 	}
 	.detail-title {
 		height: 130rpx;
@@ -393,6 +390,43 @@
 		height: 130rpx;
 		line-height: 130rpx;
 		width: 200rpx;
+	}
+	// 评价页面列表
+	.ping-list {
+		display: flex;
+		flex-direction: column;
+	}
+	
+	.ping-tag {
+		display: flex;
+		flex-direction: column;
+		background-color: #FFFFFF;
+		padding: 30rpx 20rpx;
+	}
+	
+	.ping-img {
+		height: 60rpx;
+		width: 60rpx;
+		border-radius: 50%;
+	}
+	
+	.ping-item {
+		flex-wrap: nowrap;
+		display: inline-flex;
+	}
+	
+	.ping-text {
+		display: flex;
+		flex-direction: column;
+		font-size: 23rpx;
+		color: #888888;
+		margin-left: 20rpx;
+	}
+	
+	.ping-word {
+		margin-left: 80rpx;
+		font-size: 26rpx;
+		padding: 20rpx 0rpx;
 	}
 
 	@keyframes showPopup {

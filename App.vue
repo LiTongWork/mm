@@ -1,8 +1,8 @@
 <script>
 	export default {
 		globalData:{
-			baseUrl:"http://mask.itknow.cn",
-			imgUrl:"http://mask.itknow.cn/File/ShowImg?fileName=",
+			baseUrl:"https://xwxapi.itknow.cn",
+			imgUrl:"https://xwxapi.itknow.cn/File/ShowImg?fileName=",
 			openId:"",
 			token:""
 		}

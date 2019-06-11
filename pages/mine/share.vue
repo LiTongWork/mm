@@ -53,6 +53,7 @@
 					},
 					success(res) {
 						console.log(res);
+
 						if (res.data.code == 200) {
 							that.posters = res.data.data[0].advUrl
 						}

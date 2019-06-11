@@ -8,7 +8,7 @@
 		<!-- 内容列表 -->
 		<view class="list">
 			<view class="list-item" v-for="(item,index) in list" :key='index'>
-				<view class="avatar"><image src="/static/imgs/default.png"  ></image></view>
+				<view class="avatar"><image :src="item.headImg"></image></view>
 				<view class="nickName">{{item.nickName}}</view>
 				<view class="level" v-if="item.level == 1"><text>一级粉丝</text></view>
 				<view class="level" v-if="item.level == 2"><text>二级粉丝</text></view>						
@@ -24,13 +24,9 @@
 	export default {
 		data(){
 			return {
-				status: -1,
-				url: '/api/Distribution/GroupLogPage',
+				status: 0,
+				url: '/api/Distribution/UserFirstList',
 				nav:[
-					{
-						status: -1,
-						label: '全部粉丝'
-					},
 					{
 						status: 0,
 						label: '一级粉丝'
@@ -69,13 +65,11 @@
 					that.status = status;
 					that.list = [];
 					that.page = 1;
-					if (that.status == -1) {
-						that.url = '/api/Distribution/GroupLogPage'
-					} else if(that.status == 0) {
+					if(that.status == 0) {
 						that.url = '/api/Distribution/UserFirstList'
 					} else if (that.status == 1) {
 						that.url = '/api/Distribution/UserSecondList'
-					}
+					} 
 					that.getList(that.url);
 				}
 
@@ -103,6 +97,9 @@
 						uni.stopPullDownRefresh();
 						if(res.data.code == 200) {
 							that.list = that.list.concat(res.data.data.list);
+							for(var i=0;i<that.list.length;i++) {
+								that.list[i].headImg = JSON.parse(res.data.data.list[i].headImg)
+							}
 						}
 					},
 					fail(res){

@@ -168,7 +168,7 @@
 					method: "POST",
 					dataType: 'json',
 					data: {
-						userAddress: that.province+that.city+that.area+that.address,
+						userAddress: that.province+that.city+that.area+that.address+that.consigneeName+that.consigneeMobile,
 						isShopping: true,
 						goodsChecked: that.goodsChecked
 					},
@@ -352,13 +352,13 @@
 	}
 
 	.order-btn {
-		height: 100rpx;
-		width: 250rpx;
+		height: 80rpx;
+		width: 190rpx;
 		background-color: #313131;
 		color: #FFFFFF;
 		border-radius: 60rpx;
 		margin-left: 15rpx;
-		line-height: 100rpx;
+		line-height: 80rpx;
 		text-align: center;
 		margin: 3rpx 0rpx;
 		margin-right: 30rpx;

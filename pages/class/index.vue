@@ -172,9 +172,10 @@
 					url: '/pages/goods/goods?id=' + id
 				});
 			},
-			// onPullDownRefresh() {
-			// 	this.category(0);
-			// },
+			onPullDownRefresh() {
+				this.category(0);
+				uni.stopPullDownRefresh();
+			},
 		}
 
 	}
