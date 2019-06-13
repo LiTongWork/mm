@@ -17,12 +17,12 @@
 		</view>
 		<!-- 余额积分 -->
 		<view class="money">
-			<view class="money-item balance">
+			<view class="money-item balance" @click="goYu">
 				<view class="text">￥{{userInfo.surplus}}</view>
 				<view class="desc">我的余额</view>
 			</view>
 			<view class="line"></view>
-			<view class="money-item integral">
+			<view class="money-item integral" @click="jifen">
 				<view class="text">{{userInfo.integral}}</view>
 				<view class="desc">我的积分</view>
 			</view>
@@ -50,7 +50,7 @@
 			<view class="list-item wallet" @tap="toWallet">
 				<view class="left">
 					<image src="/static/imgs/icon-wallet.png" ></image>
-					<text>我的钱包</text>
+					<text>我的兑换</text>
 				</view>
 				<uni-icon type="arrowright" size="20" color="#a2a2a2"></uni-icon>
 			</view>
@@ -77,13 +77,13 @@
 				</view>
 				<uni-icon type="arrowright" size="20" color="#a2a2a2"></uni-icon>
 			</view>
-			<view class="list-item fenxiao" @tap="toFenxiao">
+			<!-- <view class="list-item fenxiao" @tap="toFenxiao">
 				<view class="left">
 					<image src="/static/imgs/icon-fenxiao.png" ></image>
 					<text>分销中心</text>
 				</view>
 				<uni-icon type="arrowright" size="20" color="#a2a2a2"></uni-icon>
-			</view>			
+			</view>		 -->	
 		</view>
 	</view>
 </template>
@@ -140,8 +140,8 @@
 					success(res) {
 						console.log(res);
 						if(res.data.code == 200) {
-							res.data.data.headImg = JSON.parse(res.data.data.headImg);
-							res.data.data.nickName = JSON.parse(res.data.data.nickName);
+							res.data.data.headImg = res.data.data.headImg ? JSON.parse(res.data.data.headImg) : '';
+							res.data.data.nickName = res.data.data.nickName ? JSON.parse(res.data.data.nickName) : '';
 							that.userInfo = res.data.data;
 						}
 					},
@@ -173,6 +173,18 @@
 					fail(res){
 						console.log(res)
 					}
+				})
+			},
+			//跳转到分销
+			goYu() {
+				uni.navigateTo({
+					url: `/pages/fenxiao/index`
+				})
+			},
+			//积分明细
+			jifen() {
+				uni.navigateTo({
+					url: `/pages/fenxiao/jfmx`
 				})
 			},
 			//  跳转

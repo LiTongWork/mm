@@ -5,7 +5,7 @@
 			<!-- 头部-默认显示 -->
 			<view class="before" @click="goCart">
 				<view class="middle"></view>
-				<view class="icon-btn"  >
+				<view class="icon-btn">
 					<view class="icon cart"></view>
 				</view>
 			</view>
@@ -76,17 +76,19 @@
 				{{goodsName}}
 			</view>
 			<view class="price" v-if="payMethod==1">￥{{currentPice}}</view>
-			<view class="price" v-if="payMethod==2">{{currentPice}}积分</view>
-			<view class="" style="font-size: 26rpx;color: #A2A2A2;display: flex;">
-				<text style="margin-right: 30rpx;">原价{{originalPice}}</text><text style="margin-right: 30rpx;">销量:{{sales}}</text><text
-				 style="margin-right: 30rpx;">运费:{{freight}}元</text>
+			<view class="price" v-if="payMethod==2">{{currentPice}} <text style="font-size: 24rpx;margin-left:20rpx;"> 积分</text></view>
+			<view class="" style="font-size: 26rpx;color: #A2A2A2;display: flex;justify-content: space-between;">
+				<text style="margin-right: 30rpx;text-decoration: line-through;">原价:￥ {{originalPice}}</text>
+				<text style="margin-right: 30rpx;">运费: {{freight}}</text>
+				<text style="margin-right: 30rpx;text-align: right;display: flex;justify-content: flex-end;">销量: {{sales}}</text>
 			</view>
 
 		</view>
 		<!-- 评价和详情页切换 -->
 		<view class="detail-part">
 			<view class="detail-title">
-				<text :class="[leftDetail?'activePart':'detail-tag']" @click="detail">商品详情</text><text :class="[rightDetail?'activePart':'detail-tag']" @click="pingjia">评价</text>
+				<text :class="[leftDetail?'activePart':'detail-tag']" @click="detail">商品详情</text><text :class="[rightDetail?'activePart':'detail-tag']"
+				 @click="pingjia">评价</text>
 			</view>
 			<view class="" style="flex-direction: column;" v-if="leftDetail">
 				<rich-text style="font-size: 20px;line-height: 150%;" :nodes="goodsContent"></rich-text>
@@ -102,6 +104,11 @@
 					</view>
 					<view class="ping-word">
 						<rich-text :nodes="value.content"></rich-text>
+						<view class="ping-pic">
+							<block v-for="(item,index1) in value.imgs " :key="index1">
+								<image class="ping-onload" :src="imgUrl+item" mode="aspectFit" @click="look(index1)"></image>
+							</block>
+						</view>
 					</view>
 				</view>
 			</view>
@@ -136,6 +143,7 @@
 				shareClass: '', //分享弹窗css类，控制开关动画
 				// 商品信息
 				id: "",
+				phone: "",
 				goodsName: "",
 				payMethod: "", //1是人民币，2是积分
 				currentPice: 0,
@@ -147,7 +155,8 @@
 				rightDetail: false, //右边切换
 				page: 1,
 				rows: 2,
-				list: [] //评价列表
+				list: [], //评价列表
+				imgs: [] //评论的图片
 			};
 		},
 		onLoad(option) {
@@ -165,7 +174,8 @@
 		onReachBottom() {
 			let that = this;
 			that.page = that.page + 1
-			that.evaluation(that.page, that.rows)
+			that.evaluation(that.page, that.rows);
+
 		},
 		methods: {
 			// 商品详情
@@ -174,7 +184,7 @@
 				uni.request({
 					header: {
 						'content-type': 'application/x-www-form-urlencoded',
-						"auth":app.default.globalData.token
+						"auth": app.default.globalData.token
 					},
 					method: "POST",
 					dataType: 'json',
@@ -184,18 +194,23 @@
 					},
 					success(res) {
 						if (res.data.code == 200) {
-							console.log(JSON.stringify(res.data.data))
+							// console.log(JSON.stringify(res.data.data))
 							that.goodsName = res.data.data.goodsName;
 							that.payMethod = res.data.data.payMethod;
+							if(that.payMethod==1) {
+								that.currentPice = Number(res.data.data.currentPice).toFixed(2);
+							}
 							that.currentPice = res.data.data.currentPice;
-							that.originalPice = res.data.data.originalPice;
+							that.originalPice = Number(res.data.data.originalPice).toFixed(2);
 							that.sales = res.data.data.sales;
-							that.freight = res.data.data.freight;
+							that.freight = Number(res.data.data.freight).toFixed(2);
+							that.phone = res.data.data.phone;
 							that.swiperList.push({
 								goodsImg: res.data.data.goodsImg
 							})
-							console.log("res.data.data.goodsContent",res.data.data.goodsContent)
-							var htmlString= res.data.data.goodsContent.replace(/\\/g, "").replace(/<img/g,"<img style=\"max-width:100%;height:auto;\"");
+							// console.log("res.data.data.goodsContent", res.data.data.goodsContent)
+							var htmlString = res.data.data.goodsContent.replace(/\\/g, "").replace(/<img/g,
+								"<img style=\"max-width:100%;height:auto;\"");
 							that.goodsContent = htmlParser(htmlString);
 						}
 					}
@@ -209,9 +224,9 @@
 			},
 			// 客服
 			toChat() {
-				uni.navigateTo({
-					url: "../msg/chat/chat?name=客服008"
-				})
+				uni.makePhoneCall({
+					phoneNumber: this.phone
+				});
 			},
 			// 首页
 			goIndex() {
@@ -236,19 +251,41 @@
 					},
 					success(res) {
 						if (res.data.code == 200) {
-							that.list = that.list.concat(res.data.data.list);
-							for (var i = 0; i < that.list.length; i++) {
-								// var time = res.data.data.list[i].createTime;
-								// that.list[i].createTime=[]
-								that.list[i].createTime =res.data.data.list[i].createTime.replace("T", " ")
-								// that.list[i].createTime = app.default.changeDate(time)
-								// var htmlString = that.list.concat(res.data.data.list[i].content).replace(/\\/g, "").replace(/<img/g,
-								// 	"<img style=\"max-width:100%;height:auto;\"");
-								// that.list[i].content = htmlParser(htmlString);
+							for (let i = 0; i < res.data.data.list.length; i++) {
+								console.log(res.data.data.list[i])
+								let str = res.data.data.list[i].createTime;
+								console.log(str)
+								let time = str.split("T");
+								console.log("time", time[0])
+								res.data.data.list[i].createTime = time[0];
+								that.imgs = res.data.data.list[i].imgs
 							}
+							console.log(res.data.data.list)
+							that.list = that.list.concat(res.data.data.list);
 						}
 					}
 				})
+			},
+			look(index) {
+				let that = this;
+				let url = []
+				// console.log((that.imgUrl+that.imgs).split(','))
+				for (let i = 0; i < that.imgs.length; i++) {
+					url.push(that.imgUrl + that.imgs[i])
+				}
+				console.log(url)
+				uni.previewImage({
+					urls: url,
+					current: index,
+					longPressActions: {
+						success: function(res) {
+							console.log('选中了第' + (res.tapIndex + 1) + '个按钮');
+						},
+						fail: function(res) {
+							console.log(res.errMsg);
+						}
+					}
+				});
 			},
 			detail() {
 				let that = this;
@@ -288,7 +325,7 @@
 						if (res.data.code == 200) {
 							uni.showToast({
 								duration: 1500,
-								title:res.data.message,
+								title: res.data.message,
 								icon: "none"
 							});
 						}
@@ -297,13 +334,13 @@
 			},
 			//立即购买
 			buy() {
-				let goodsChecked =[{
-					goodsId:this.id,
-					number:"1"
-				}]	
+				let goodsChecked = [{
+					goodsId: this.id,
+					number: "1"
+				}]
 				// console.log(goodsChecked)
 				uni.navigateTo({
-					url:"../order/confirmation?goodsChecked="+JSON.stringify(goodsChecked)
+					url: "../order/confirmation?goodsChecked=" + JSON.stringify(goodsChecked)
 				})
 			},
 			//跳转确认订单页面
@@ -355,19 +392,22 @@
 	page {
 		background-color: #f8f8f8;
 	}
+
 	.detail-part {
 		display: flex;
 		flex: 1;
 		flex-direction: column;
 		margin-bottom: 99rpx;
 	}
+
 	.detail-title {
 		height: 130rpx;
 		display: flex;
 		justify-content: center;
 		background-color: #FFFFFF;
-		border-bottom:1rpx solid #F2F2F2;
+		border-bottom: 1rpx solid #F2F2F2;
 	}
+
 	.detail-tag {
 		display: inline-flex;
 		flex: 1;
@@ -379,42 +419,55 @@
 		line-height: 130rpx;
 		width: 200rpx;
 	}
+
 	.activePart {
 		display: inline-flex;
 		flex: 1;
 		text-align: center;
 		align-self: center;
 		justify-content: center;
-		border-bottom:2rpx solid #313131;
+		border-bottom: 2rpx solid #313131;
 		color: #313131;
 		height: 130rpx;
 		line-height: 130rpx;
 		width: 200rpx;
 	}
+
 	// 评价页面列表
 	.ping-list {
 		display: flex;
 		flex-direction: column;
 	}
-	
+
 	.ping-tag {
 		display: flex;
 		flex-direction: column;
 		background-color: #FFFFFF;
 		padding: 30rpx 20rpx;
 	}
-	
+
+	.ping-pic {
+		display: inline-flex;
+		flex-wrap: wrap;
+		margin-top: 20rpx;
+	}
+
 	.ping-img {
 		height: 60rpx;
 		width: 60rpx;
 		border-radius: 50%;
 	}
-	
+
+	.ping-onload {
+		height: 200rpx;
+		width: 200rpx;
+	}
+
 	.ping-item {
 		flex-wrap: nowrap;
 		display: inline-flex;
 	}
-	
+
 	.ping-text {
 		display: flex;
 		flex-direction: column;
@@ -422,7 +475,7 @@
 		color: #888888;
 		margin-left: 20rpx;
 	}
-	
+
 	.ping-word {
 		margin-left: 80rpx;
 		font-size: 26rpx;
@@ -721,7 +774,7 @@
 	.goods-info {
 		.price {
 			font-size: 46upx;
-			font-weight: 600;
+			// font-weight: 600;
 			color: #f47925;
 		}
 
@@ -873,6 +926,7 @@
 
 		.icons {
 			display: flex;
+			flex: 1;
 			height: 80upx;
 
 			// margin-left: -4%;
@@ -903,24 +957,32 @@
 			border-radius: 40upx;
 			overflow: hidden;
 			display: flex;
+			flex: 2;
 			margin-right: -2%;
 
 			.joinCart,
 			.buy {
-				height: 80upx;
-				padding: 0 40upx;
-				color: #fff;
 				display: flex;
+				flex: 1;
+				height: 80upx;
+				// padding: 0 30upx;
+				line-height: 80upx;
+				text-align: center;
+				justify-content: center;
+				color: #fff;
 				align-items: center;
 				font-size: 28upx;
 			}
 
 			.joinCart {
-				background-color: #f0b46c;
+				background: -webkit-linear-gradient(left, #f6cb45, #f09a38);
+				background: -o-linear-gradient(right, #f6cb45, #f09a38);
+				background: -moz-linear-gradient(right, #f6cb45, #f09a38);
+				background: linear-gradient(to right, #f6cb45, #f09a38);
 			}
 
 			.buy {
-				background-color: #313131;
+				background-color: #eb5d29;
 			}
 		}
 	}

@@ -1,33 +1,41 @@
 {
 	"pages": [
-		
+
 		{
 			"path": "pages/login/login",
 			"style": {
 				"navigationBarTitleText": "登录",
-				"app-plus":{"titleNView": false}
+				"app-plus": {
+					"titleNView": false
+				}
 			}
-		},{
+		}, {
 			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "首页",
-				"app-plus":{"titleNView": false},
+				"app-plus": {
+					"titleNView": false
+				},
 				"enablePullDownRefresh": true
 			}
-		},{
+		}, {
 			"path": "pages/class/index",
 			"style": {
 				"navigationBarTitleText": "分类",
-				"app-plus":{"titleNView": false},
+				"app-plus": {
+					"titleNView": false
+				},
 				"enablePullDownRefresh": true
 			}
-		}, 
-		
+		},
+
 		{
 			"path": "pages/class/search",
 			"style": {
 				"navigationBarTitleText": "搜索 ",
-				"app-plus":{"titleNView": false},
+				"app-plus": {
+					"titleNView": false
+				},
 				"enablePullDownRefresh": true
 			}
 		},
@@ -35,180 +43,194 @@
 			"path": "pages/cart/index",
 			"style": {
 				"navigationBarTitleText": "购物车",
-				"app-plus":{"titleNView": false},
-				"enablePullDownRefresh": true
-			}
-		}, 
-		{
-			"path":"pages/mine/index",
-			"style":{
-				"navigationBarTitleText":"我的",
-				"app-plus":{"titleNView": false}
-			}
-		},
-		{
-		    "path" : "pages/mine/order",
-		    "style" : {
-				"navigationBarTitleText":"商城订单",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
+				"app-plus": {
+					"titleNView": false
+				},
 				"enablePullDownRefresh": true
 			}
 		},
 		{
-		    "path" : "pages/mine/logistics",
-		    "style" : {
-				"navigationBarTitleText":"查看物流",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
-				"enablePullDownRefresh": true
+			"path": "pages/mine/index",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"app-plus": {
+					"titleNView": false
+				}
 			}
-		},		
+		},
 		{
-		    "path" : "pages/mine/wallet",
-		    "style" : {
-				"navigationBarTitleText":"我的钱包",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
+			"path": "pages/mine/order",
+			"style": {
+				"navigationBarTitleText": "商城订单",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
 				"enablePullDownRefresh": true
 			}
 		},
 		{
-		    "path" : "pages/mine/signin",
-		    "style" : {
-				"navigationBarTitleText":"我的签到",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
+			"path": "pages/mine/logistics",
+			"style": {
+				"navigationBarTitleText": "查看物流",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
 				"enablePullDownRefresh": false
 			}
 		},
 		{
-		    "path" : "pages/mine/address",
-		    "style" : {
-				"navigationBarTitleText":"收货地址",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
-				"enablePullDownRefresh": true
-			}
-		},		
-		{
-		    "path" : "pages/mine/editAddress",
-		    "style" : {
-				"navigationBarTitleText":"编辑收货地址",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
-				"enablePullDownRefresh": true
-			}
-		},			
-		{
-		    "path" : "pages/mine/newAddress",
-		    "style" : {
-				"navigationBarTitleText":"新增收货地址",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
-				"enablePullDownRefresh": true
-			}
-		},		
-		{
-		    "path" : "pages/mine/share",
-		    "style" : {
-				"navigationBarTitleText":"我的分享",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
-				"enablePullDownRefresh": false
-			}
-		},				
-		{
-		    "path" : "pages/fenxiao/index",
-		    "style" : {
-				"navigationBarTitleText":"分销中心",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
-				"enablePullDownRefresh": true
-			}
-		},	
-		{
-		    "path" : "pages/fenxiao/yjtx",
-		    "style" : {
-				"navigationBarTitleText":"佣金提现",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
-				"enablePullDownRefresh": true
-			}
-		},					
-		{
-		    "path" : "pages/fenxiao/yjmx",
-		    "style" : {
-				"navigationBarTitleText":"佣金明细",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
-				"enablePullDownRefresh": true
-			}
-		},			
-		{
-		    "path" : "pages/fenxiao/txmx",
-		    "style" : {
-				"navigationBarTitleText":"提现明细",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
-				"enablePullDownRefresh": true
-			}
-		},	
-		{
-		    "path" : "pages/fenxiao/team",
-		    "style" : {
-				"navigationBarTitleText":"我的粉丝",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
+			"path": "pages/mine/wallet",
+			"style": {
+				"navigationBarTitleText": "我的钱包",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
 				"enablePullDownRefresh": true
 			}
 		},
 		{
-			"path" : "pages/mine/evaluate",
-			"style" : {
-				"navigationBarTitleText":"发表评价",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
+			"path": "pages/mine/signin",
+			"style": {
+				"navigationBarTitleText": "我的签到",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/mine/address",
+			"style": {
+				"navigationBarTitleText": "收货地址",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/mine/editAddress",
+			"style": {
+				"navigationBarTitleText": "编辑收货地址",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
 				"enablePullDownRefresh": false
 			}
 		},
 		{
-			"path" : "pages/order/confirmation",
-			"style" : {
-				"navigationBarTitleText":"确认订单",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
+			"path": "pages/mine/newAddress",
+			"style": {
+				"navigationBarTitleText": "新增收货地址",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/mine/share",
+			"style": {
+				"navigationBarTitleText": "我的分享",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/fenxiao/index",
+			"style": {
+				"navigationBarTitleText": "分销中心",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/fenxiao/yjtx",
+			"style": {
+				"navigationBarTitleText": "佣金提现",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/fenxiao/jfmx",
+			"style": {
+				"navigationBarTitleText": "积分明细",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/fenxiao/yjmx",
+			"style": {
+				"navigationBarTitleText": "佣金明细",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/fenxiao/txmx",
+			"style": {
+				"navigationBarTitleText": "提现明细",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/fenxiao/team",
+			"style": {
+				"navigationBarTitleText": "我的粉丝",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/mine/evaluate",
+			"style": {
+				"navigationBarTitleText": "发表评价",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
 				"enablePullDownRefresh": false
 			}
 		},
 		{
-			"path" : "pages/goods/goods",
-			"style" : {
-				"navigationBarTitleText":"商品详情",
-				"navigationBarBackgroundColor":"#f8f8f8",
-				"backgroundColorTop":"#f3f3f3",
-				"backgroundColorBottom":"#ffffff",
+			"path": "pages/order/confirmation",
+			"style": {
+				"navigationBarTitleText": "确认订单",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/goods/goods",
+			"style": {
+				"navigationBarTitleText": "商品详情",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"backgroundColorTop": "#f3f3f3",
+				"backgroundColorBottom": "#ffffff",
 				"enablePullDownRefresh": false
 			}
 		}
-				
 
-    ],
+
+	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "面膜",
@@ -218,32 +240,32 @@
 		"enablePullDownRefresh": false
 	},
 	"tabBar": {
-        "color": "#8A8A8A",
-        "selectedColor": "#313131",
-        "borderStyle": "black",
-        "backgroundColor": "#ffffff",
-        "list": [{
-            "pagePath": "pages/index/index",
-            "iconPath": "static/imgs/icon_index.png",
-            "selectedIconPath": "static/imgs/icon_index_active.png",
-            "text": "首页"
-        }, {
-            "pagePath": "pages/class/index",
-            "iconPath": "static/imgs/icon_class.png",
-            "selectedIconPath": "static/imgs/icon_class_active.png",
-            "text": "分类"
-        },{
-            "pagePath": "pages/cart/index",
-            "iconPath": "static/imgs/icon_cart.png",
-            "selectedIconPath": "static/imgs/icon_cart_active.png",
-            "text": "购物车"
-        },
-		{
-            "pagePath": "pages/mine/index",
-            "iconPath": "static/imgs/icon_mine.png",
-            "selectedIconPath": "static/imgs/icon_mine_active.png",
-            "text": "我的"
-        }
+		"color": "#8A8A8A",
+		"selectedColor": "#313131",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"list": [{
+				"pagePath": "pages/index/index",
+				"iconPath": "static/imgs/icon_index.png",
+				"selectedIconPath": "static/imgs/icon_index_active.png",
+				"text": "首页"
+			}, {
+				"pagePath": "pages/class/index",
+				"iconPath": "static/imgs/icon_class.png",
+				"selectedIconPath": "static/imgs/icon_class_active.png",
+				"text": "分类"
+			}, {
+				"pagePath": "pages/cart/index",
+				"iconPath": "static/imgs/icon_cart.png",
+				"selectedIconPath": "static/imgs/icon_cart_active.png",
+				"text": "购物车"
+			},
+			{
+				"pagePath": "pages/mine/index",
+				"iconPath": "static/imgs/icon_mine.png",
+				"selectedIconPath": "static/imgs/icon_mine_active.png",
+				"text": "我的"
+			}
 		]
-    }
+	}
 }

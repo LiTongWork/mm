@@ -10,6 +10,10 @@
 		<view class="tx">
 			<view class="input"><input type="number" v-model="txMoney" placeholder="输入提现金额"></view>
 			<view class="tip">{{tip}}</view>
+			<view class="input other"><input type="text" v-model="linkName" placeholder="输入姓名"></view>
+			<view class="input other"><input type="text" v-model="linkPhone" placeholder="输入手机号"></view>
+			<view class="input"><input type="number" v-model="bankCode" placeholder="输入卡号" @blur="changeName()"></view>
+			<view class="input"><input type="text" v-model="bankName" placeholder="输入银行卡名"></view>
 		</view>
 		<view class="handle"><button @tap="tx">申请提现</button></view>
 	</view>
@@ -17,12 +21,17 @@
 
 <script>
 	const app = require('../../App.vue');
+	import carNumber from '@/components/carNumber.js'
 	export default {
 		data(){
 			return {
 				userInfo: {},
 				txMoney: '',
-				tip: '*提取金额以100整数提取，每提取一次收取20%平台费'
+				tip: '*提取金额以100整数提取，每提取一次收取3%平台费',
+				bankCode: "", //输入卡号
+				bankName: '',//卡名
+				linkName:"",//姓名
+				linkPhone:""//手机号
 			}
 		},
 		onLoad(){
@@ -34,6 +43,19 @@
 			that.getUserInfo();
 		},
 		methods: {
+			changeName(e) {
+				var that = this;
+				var temp = carNumber.bankCardAttribution(that.bankCode)
+				console.log(temp)
+				if (temp == Error) {
+				  temp.bankName = '';
+				  temp.cardTypeName = '';
+				} else {
+				  // this.cardType: temp.bankName + temp.cardTypeName,
+				  that.bankName = temp.bankName,
+				  console.log(that.bankName)
+				}
+			},
 			// 获取个人信息
 			getUserInfo(){
 				let that = this;
@@ -53,6 +75,10 @@
 						if(res.data.code == 200) {
 							res.data.data.surplus = res.data.data.surplus.toFixed(2);
 							that.userInfo = res.data.data;
+							that.linkName=res.data.data.linkName;
+							that.linkPhone=res.data.data.linkPhone;
+							that.bankName=res.data.data.bankName;
+							that.bankCode=res.data.data.bankCode;
 						}
 					},
 					fail(res){
@@ -99,10 +125,43 @@
 						mask: true,
 						duration: 1500
 					})						
-				} else {
+				}
+				 else if (that.linkName == '') {
+				 	uni.showToast({
+				 		title: '姓名不能为空',
+				 		icon: 'none',
+				 		mask: true,
+				 		duration: 1500
+				 	})						
+				 }else if (that.linkPhone == '') {
+				 	uni.showToast({
+				 		title: '手机号不能为空',
+				 		icon: 'none',
+				 		mask: true,
+				 		duration: 1500
+				 	})						
+				 }else if (that.bankName == '') {
+				 	uni.showToast({
+				 		title: '银行卡名不能为空',
+				 		icon: 'none',
+				 		mask: true,
+				 		duration: 1500
+				 	})						
+				 }else if (that.bankCode== '') {
+				 	uni.showToast({
+				 		title: '银行卡号不能为空',
+				 		icon: 'none',
+				 		mask: true,
+				 		duration: 1500
+				 	})						
+				 }else {
 					let params = {
 						money: that.txMoney,
-						openId: app.default.globalData.openId
+						openId: app.default.globalData.openId,
+						linkName:that.linkName,
+						linkPhone:that.linkPhone,
+						bankName:that.bankName,
+						bankCode:that.bankCode
 					}
 					uni.request({
 						url: app.default.globalData.baseUrl + "/api/Distribution/Deposit",
@@ -172,6 +231,9 @@
 	/* 提现金额 */
 	.tx {
 		margin-top: 100upx;
+	}
+	.tx .input {
+		margin: 10upx auto;
 	}
 	.tx .input input {
 		box-sizing: border-box;

@@ -19,7 +19,7 @@
 			<textarea auto-height="true" maxlength="100" placeholder="输入您的评价吧(5-100字)" :readonly=" isReview == 'false' ? '' : 'readonly' " v-model="evaluateText"></textarea>
 			<view class="photos" @tap="uploadImage">
 				<view class="photo-list" v-for="(item,index) in photoList" :key='index'>
-					<image :src="imgUrl + item"></image>
+					<image :src="imgUrl + item.img"></image>
 				</view>
 				<view v-if="photoList.length == 0 && isReview == 'false' " class="btn">
 					<image src="/static/imgs/camera.png"></image>
@@ -160,7 +160,7 @@
 					indentId: that.indentId,
 					star: that.rate,
 					content: that.evaluateText,
-					imgList: that.photoList.length 
+					imgList: that.photoList
 				}
 				if (params.star == 0) {
 					uni.showToast({

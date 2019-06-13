@@ -3,6 +3,9 @@
 		<view class="posters">
 			<image :src="imgUrl + posters" mode="aspectFill"></image>
 		</view>
+		<view class="" style="align-self: center;">
+			<image style="width: 250px;height: 250px;" :src="imgUrl+imgs" mode=""></image>
+		</view>
 		<view class="handle">
 			<!-- <button class="download">下载海报</button> -->
 			<button class="share" open-type="share">分享朋友</button>
@@ -16,12 +19,14 @@
 		data () {
 			return {
 				imgUrl: app.default.globalData.imgUrl,
-				posters: ''
+				posters: '',
+				imgs:""
 			}
 		},
 		onLoad(options){
 			let that = this;
-			that.getPosters()
+			that.getPosters();
+			that.getMa()
 		},
 		onShareAppMessage(){
 			// if (res.from === 'button') {// 来自页面内分享按钮
@@ -40,6 +45,11 @@
 			  }			  
 			}			
 		},
+		onPullDownRefresh() {
+			this.getPosters();
+			this.getMa();
+			uni.stopPullDownRefresh();
+		},
 		methods: {
 			// 获取海报
 			getPosters(){
@@ -53,9 +63,28 @@
 					},
 					success(res) {
 						console.log(res);
-
 						if (res.data.code == 200) {
 							that.posters = res.data.data[0].advUrl
+						}
+					},
+					fail(res){
+						console.log(res)
+					}					
+				})
+			},
+			getMa() {
+				let that = this;
+				uni.request({
+					url: app.default.globalData.baseUrl + '/api/User/QrCode',
+					method: 'post',
+					header: {
+						'content-type': 'application/json',
+						'auth': app.default.globalData.token
+					},
+					success(res) {
+						console.log(res);
+						if (res.data.code == 200) {
+							that.imgs = res.data.data
 						}
 					},
 					fail(res){
@@ -70,6 +99,9 @@
 <style>
 	.container {
 		padding-bottom: 98upx;
+		display: flex;
+		flex-direction: column;
+		background-color: #FFFFFF;
 	}
 	.posters {
 		width: 100%;

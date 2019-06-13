@@ -72,6 +72,7 @@
 			<!-- <view class="delBtn" @tap="deleteList" v-if="selectedList.length>0">删除</view> -->
 			<view class="settlement">
 				<view class="sum">合计:<text class="money">{{sumPrice}}</text></view>
+				<!-- <view class="sum">合计:<text class="money" v-if="payMethod==2">{{sumPrice}}积分</text></view> -->
 				<!-- <view class="sum" v-if="payMethod==2">合计:<text class="money">{{sumPrice}}积</text></view> -->
 				<view>
 					<view class="btn" @tap="toConfirmation" :itemlength="selectedList.length">立即购买</view>
@@ -90,6 +91,7 @@
 		},
 		data() {
 			return {
+				freight:"0",
 				sumPrice: '0.00',
 				headerPosition: "fixed",
 				headerTop: null,
@@ -136,6 +138,8 @@
 			this.isAllselected = false;
 		},
 		onShow() {
+			this.sumPrice = 0;
+			this.freight = 0
 			this.jifen = false;
 			this.qian  = false;
 			this.isAllselected = false;
@@ -255,6 +259,7 @@
 							goodsId: that.goodsList[i].goodsId,
 							number: that.goodsList[i].number
 						}
+						that.payMethod=that.goodsList[i].payMethod
 						console.log(" that.goodsList[i].goodsId", that.goodsList[i].goodsId)
 						that.goodsChecked.push(goods)
 					}
@@ -297,9 +302,16 @@
 						console.log(res.data)
 						var goodsChecked = JSON.stringify(that.goodsChecked)
 						if (res.data.code == 200) {
-							uni.navigateTo({
-								url: "../order/confirmation?goodsChecked=" + goodsChecked + "&sumPrice=" + that.sumPrice
-							})
+							if(that.payMethod==2) {
+								uni.navigateTo({
+									url: "../order/confirmation?goodsChecked=" + goodsChecked + "&sumPrice=" + that.freight
+								})
+							}else{
+								uni.navigateTo({
+									url: "../order/confirmation?goodsChecked=" + goodsChecked + "&sumPrice=" + that.sumPrice
+								})
+							}
+							
 						} else {
 							uni.showToast({
 								duration: 2000,
@@ -386,11 +398,20 @@
 				let len = this.goodsList.length;
 				for (let i = 0; i < len; i++) {
 					if (this.goodsList[i].selected) {
-						if (e && i == index) {
-							this.sumPrice = this.sumPrice + (e.detail.value * this.goodsList[i].currentPice + this.goodsList[i].freight);
-						} else {
-							this.sumPrice = this.sumPrice + (this.goodsList[i].number * this.goodsList[i].currentPice + this.goodsList[i].freight);
+						if(this.goodsList[i].payMethod==1) {
+							if (e && i == index) {
+								this.sumPrice = this.sumPrice + (e.detail.value * this.goodsList[i].currentPice + this.goodsList[i].freight);
+							} else {
+								this.sumPrice = this.sumPrice + (this.goodsList[i].number * this.goodsList[i].currentPice + this.goodsList[i].freight);
+							}
+						}else{
+							if (e && i == index) {
+								this.sumPrice = this.sumPrice + (e.detail.value * this.goodsList[i].currentPice);
+							} else {
+								this.sumPrice = this.sumPrice + (this.goodsList[i].number * this.goodsList[i].currentPice);
+							}
 						}
+						
 					}
 				}
 				this.sumPrice = this.sumPrice.toFixed(2);

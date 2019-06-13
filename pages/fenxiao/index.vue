@@ -12,23 +12,23 @@
 		<view class="commission">
 			<view class="detail">
 				<view class="money">{{userInfo.surplus}}</view>
-				<view class="commission-desc">可提现佣金（元）</view>
+				<view class="commission-desc">可提现赏金（元）</view>
 				<view class="tip">{{tip}}</view>
 			</view>
-			<view class="handle"><button @tap="toYjtx">佣金提现</button></view>
+			<view class="handle"><button @tap="toYjtx">赏金提现</button></view>
 		</view>
 		<view class="list">
 			<view class="list-item Yjtx" @tap="toYjtx">
 				<view class="icon"><image src="/static/imgs/icon-purse.png"></image></view>
 				<view class="content">
-					<view class="title">分销佣金</view>
+					<view class="title">累计赏金</view>
 					<view><text>{{userInfo.surplus}}</text>元</view>
 				</view>
 			</view>
 			<view class="list-item yjmx" @tap="toYjmx">
 				<view class="icon"><image src="/static/imgs/icon-commission-detail.png"></image></view>
 				<view class="content">
-					<view class="title">佣金明细</view>
+					<view class="title">赏金明细</view>
 					<view><text>{{userInfo.userStatistics.commission}}</text>笔</view>
 				</view>
 			</view>		
@@ -56,7 +56,7 @@
 		data(){
 			return {
 				userInfo: {},
-				tip: '*提取金额以100整数提取，每提取一次收取20%平台费'				
+				tip: '*提取金额以100整数提取，每提取一次收取3%平台费'				
 			}
 		},
 		onShow(){

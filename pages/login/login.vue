@@ -30,15 +30,30 @@
 			}
 		},
 		onLoad(options) {
-			// uni.showToast({
-			// 	title:options.openId,
-			// 	duration:2000
-			// })
+			console.log(options)
+			let fromUrl= "" 
+			// 第三种 普通二维码
+			if(options.q){
+			  let q = decodeURIComponent(options.q);
+				console.log(q)
+			}
+			// 第二种  小程序码
+			if(options.scene) {
+				let scene=decodeURIComponent(options.scene);
+				//&是我们定义的参数链接方式
+				fromUrl=options.scene.split("&")[0];
+			}else{
+				fromUrl=options.openId
+				// uni.showToast({
+				// 	title:"=======",
+				// 	duration:2000
+				// })
+			}
 			let that = this;
 			wx.login({
 				provider: 'weixin',
 				success: function(res) {
-					console.log("code", res.code)
+					// console.log("code", res.code)
 					if (res.code) {
 						uni.request({
 							url: app.default.globalData.baseUrl + "/api/login/UserLogin",
@@ -49,15 +64,15 @@
 							dataType: "json",
 							data: {
 								wechatCode: res.code,
-								metadata:options.openId
+								metadata:fromUrl
 							},
 							success(e) {
-								console.log("e:" + JSON.stringify(e.data));
+								// console.log("e:" + JSON.stringify(e.data));
 								app.default.globalData.openId = e.data.data.openId;
 								app.default.globalData.token = e.data.data.token;
 								wx.getSetting({
 									success(res) {
-										console.log(JSON.stringify(res.authSetting))
+										// console.log(JSON.stringify(res.authSetting))
 										if(res.authSetting["scope.userInfo"]){
 											that.mpGetUserInfo()
 										}else{
@@ -90,9 +105,9 @@
 					provider: 'weixin',
 					success: (result) => {
 						that.userInfo = result.userInfo;
-						console.log('that.userInfo' + JSON.stringify(that.userInfo)); //微信授权获得的信息
-						console.log('openId' + JSON.stringify(app.default.globalData.openId));
-						console.log('token' + JSON.stringify(app.default.globalData.token));
+						// console.log('that.userInfo' + JSON.stringify(that.userInfo)); //微信授权获得的信息
+						// console.log('openId' + JSON.stringify(app.default.globalData.openId));
+						// console.log('token' + JSON.stringify(app.default.globalData.token));
 						uni.request({
 							url: app.default.globalData.baseUrl + "/api/User/UpdateUser",
 							method: "POST",
@@ -114,6 +129,14 @@
 						})
 					}
 				})
+			},
+			getQueryString(url,name){
+				var reg = new RegExp('(^|&|/?)' + name + '=([^&|/?]*)(&|/?|$)', 'i')
+				var r = url.substr(1).match(reg)
+				if (r != null) {
+				return r[2]
+				}
+				return null;				
 			}
 
 		}

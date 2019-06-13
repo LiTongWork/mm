@@ -56,6 +56,11 @@
 			that.getTotalMoney()
 			that.getInfo()
 		},
+		onShow() {
+			let that = this;
+			that.getTotalMoney()
+			that.getInfo()
+		},
 		onPullDownRefresh() {
 			let that = this;
 			that.getTotalMoney();

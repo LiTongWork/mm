@@ -42,7 +42,7 @@
 				</view>
 			</view>
 			<view class="goods-heji" v-if="value.payMethod==1">
-				<text>合计：</text><text style="color: red;font-size: 30rpx;">￥{{value.currentPice*value.number}}</text>
+				<text>合计：</text><text style="color: red;font-size: 30rpx;">￥{{value.currentPice*value.number+value.freight}}</text>
 			</view>
 			<view class="goods-heji" v-if="value.payMethod==2">
 				<text>合计：</text><text style="color: red;font-size: 30rpx;">{{value.currentPice*value.number}}积分</text>
@@ -50,11 +50,11 @@
 		</view>
 		<!-- 提交订单按钮 -->
 		<view class="order-tag" v-if="payMethod==1">
-			<text>合计:</text><text style="color: red;">￥{{allPrice}}</text>
+			<text>合计:</text><text style="color: red;">{{allPrice}}</text>
 			<text class="order-btn" @click="trueBtn">提交订单</text>
 		</view>
 		<view class="order-tag" v-if="payMethod==2">
-			<text>合计:</text><text style="color: red;">{{allPrice}}积分</text>
+			<text>合计:</text><text style="color: red;">￥{{freight}}</text>
 			<text class="order-btn" @click="trueBtn">提交订单</text>
 		</view>
 	</view>
@@ -71,15 +71,16 @@
 			return {
 				imgUrl: app.default.globalData.imgUrl, //图片拼接位置
 				buylist: [], //订单列表
-				consigneeName:"",
-				consigneeMobile:"",
-				province:"",
-				city:"",
-				area:"",
-				address:"",
+				consigneeName: "",
+				consigneeMobile: "",
+				province: "",
+				city: "",
+				area: "",
+				address: "",
 				allPrice: "",
 				goodsChecked: [],
-				payMethod:""//支付方式1是元 ，2时积分
+				payMethod: "", //支付方式1是元 ，2时积分
+				freight: ""
 			};
 		},
 		onLoad(e) {
@@ -133,93 +134,135 @@
 						"goodsChecked": goodsChecked
 					},
 					success(res) {
-						that.buylist = res.data.data
-						for(var i = 0;i<that.buylist.length;i++){
-							that.payMethod=that.buylist[i].payMethod
+						that.buylist = res.data.data;
+						for (var i = 0; i < that.buylist.length; i++) {
+							that.freight = that.freight + res.data.data[i].freight
+							that.payMethod = that.buylist[i].payMethod
 							console.log(that.payMethod)
 						}
+						console.log(that.freight)
 					}
 				})
 			},
 			trueBtn() {
 				let that = this;
-				let  orderUrl
-				if(that.province=="") {
+				let orderUrl
+				if (that.province == "") {
 					wx.showToast({
-					  title: '请填写地址',
-					  icon: "none",
-					  mask: true,
-					  duration: 1500
+						title: '请填写地址',
+						icon: "none",
+						mask: true,
+						duration: 1500
 					})
 					return
 				}
-				if(that.payMethod==1) {
-					orderUrl="/api/User/SaveOrder"
-				}
-				if(that.payMethod==2){
-					orderUrl= "/api/User/IntegralSaveOrder"
-				}
-				uni.request({
-					header: {
-						'content-type': 'application/json',
-						"auth": app.default.globalData.token
-					},
-					url:app.default.globalData.baseUrl+orderUrl,
-					method: "POST",
-					dataType: 'json',
-					data: {
-						userAddress: that.province+that.city+that.area+that.address+that.consigneeName+that.consigneeMobile,
-						isShopping: true,
-						goodsChecked: that.goodsChecked
-					},
-					success(res) {
-						console.log(res.data);
-						if(that.payMethod ==1) {
+				if (that.payMethod == 1) {
+					uni.request({
+						header: {
+							'content-type': 'application/json',
+							"auth": app.default.globalData.token
+						},
+						url: app.default.globalData.baseUrl + "/api/User/SaveOrder",
+						method: "POST",
+						dataType: 'json',
+						data: {
+							userAddress: that.province + that.city + that.area + that.address + that.consigneeName + that.consigneeMobile,
+							isShopping: true,
+							goodsChecked: that.goodsChecked
+						},
+						success(res) {
+							console.log(res.data);
 							wx.requestPayment({
-							  timeStamp: res.data.data.data.timeStamp,
-							  nonceStr: res.data.data.data.nonceStr,
-							  package: res.data.data.data.prepayId,
-							  signType: 'MD5',
-							  paySign: res.data.data.data.sign,
-							  success(res) {
-							    wx.showToast({
-							      title: '商品购买成功',
-							      icon: 'success',
-							      mask: true,
-							      duration: 2000
-							    })
-							    wx.switchTab({
-							      url: '/pages/mine/index'
-							    })
-							  },
-							  fail(res) { 
-							    wx.showToast({
-							      title: '商品购买失败',
-							      icon: 'none',
-							      mask: true,
-							      duration: 2000
-							    })
-							    wx.switchTab({
-							      url: '/pages/mine/index'
-							    })
-							  }
+								timeStamp: res.data.data.data.timeStamp,
+								nonceStr: res.data.data.data.nonceStr,
+								package: res.data.data.data.prepayId,
+								signType: 'MD5',
+								paySign: res.data.data.data.sign,
+								success(res) {
+									wx.showToast({
+										title: '商品购买成功',
+										icon: 'success',
+										mask: true,
+										duration: 2000
+									})
+									wx.switchTab({
+										url: '/pages/mine/index'
+									})
+								},
+								fail(res) {
+									wx.showToast({
+										title: '商品购买失败',
+										icon: 'none',
+										mask: true,
+										duration: 2000
+									})
+									wx.switchTab({
+										url: '/pages/mine/index'
+									})
+								}
 							})
-						}else{
-							 wx.showToast({
-							  title: '商品购买成功',
-							  icon: 'none',
-							  mask: true,
-							  duration: 2000
-							})
-							setTimeout(function() {
-								wx.switchTab({
-								  url: '/pages/mine/index'
-								})
-							}, 2000);
-							
 						}
-					}
-				})
+					})
+				}
+				if (that.payMethod == 2) {
+					uni.request({
+						header: {
+							'content-type': 'application/json',
+							"auth": app.default.globalData.token
+						},
+						url: app.default.globalData.baseUrl + "/api/User/IntegralSaveOrder",
+						method: "POST",
+						dataType: 'json',
+						data: {
+							userAddress: that.province + that.city + that.area + that.address + "_"+that.consigneeName + "_"+that.consigneeMobile,
+							isShopping: true,
+							goodsChecked: that.goodsChecked
+						},
+						success(res) {
+							console.log(res.data);
+							if(res.data.code==200) {
+								wx.requestPayment({
+									timeStamp: res.data.data.data.timeStamp,
+									nonceStr: res.data.data.data.nonceStr,
+									package: res.data.data.data.prepayId,
+									signType: 'MD5',
+									paySign: res.data.data.data.sign,
+									success(res) {
+										wx.showToast({
+											title: '商品购买成功',
+											icon: 'success',
+											mask: true,
+											duration: 2000
+										})
+										wx.switchTab({
+											url: '/pages/mine/index'
+										})
+									},
+									fail(res) {
+										wx.showToast({
+											title: '商品购买失败',
+											icon: 'none',
+											mask: true,
+											duration: 2000
+										})
+										wx.switchTab({
+											url: '/pages/mine/index'
+										})
+									}
+								})
+							}else{
+								uni.showToast({
+									title:res.data.message,
+									icon: 'none',
+									mask: true,
+									duration: 2000
+								})
+								return;
+							}
+						}
+					})
+
+				}
 			},
 			//选择收货地址
 			selectAddress() {
@@ -253,16 +296,19 @@
 		background-color: #FFFFFF;
 		display: flex;
 	}
+
 	.add-name {
 		font-size: 30rpx;
 		line-height: 180%;
 	}
+
 	.add-pic {
 		height: 60rpx;
 		width: 100rpx;
 		margin-right: 10rpx;
 		align-self: center;
 	}
+
 	.add-icon {
 		display: inline-flex;
 		align-self: center;

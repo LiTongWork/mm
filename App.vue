@@ -5,6 +5,11 @@
 			imgUrl:"https://xwxapi.itknow.cn/File/ShowImg?fileName=",
 			openId:"",
 			token:""
+		},
+		changeDate: function (deta) {
+		  var result = deta.replace("T", " ")
+		  return result
+		  console.log('deta', result)
 		}
 	}
 </script>
